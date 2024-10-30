@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -8,37 +8,46 @@ import { ThemedView } from '@/components/ThemedView';
 export default function HomeScreen() {
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#FFCC80', dark: '#FFA726' }}
+      headerBackgroundColor="#FFFFFF" // Fond blanc pour l'en-tête
       headerImage={
         <Image
           source={require('@/assets/images/FondAccueil.jpg')}
           style={styles.fullScreenImage}
         />
       }>
-      {/* Stylized Header */}
-      <ThemedView style={styles.header}>
-        <ThemedText type="header" style={styles.appName}>
-          NomadEscape
-        </ThemedText>
-      </ThemedView>
 
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome to NomadEscape!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Discover Malta with Us</ThemedText>
-        <ThemedText>
-          *NomadEscape* is your complete travel guide to explore the hidden gems of Malta. Discover
-          top attractions, local tips, and curated routes for a truly unique experience.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">What You Can Do</ThemedText>
-        <ThemedText>
-          Explore beaches, museums, restaurants, and much more! *NomadEscape* is designed for
-          modern adventurers seeking new experiences on the island.
-        </ThemedText>
+      {/* Conteneur principal sans fond */}
+      <ThemedView style={styles.container}>
+        {/* Logo de l'application centré en haut */}
+        <ThemedView style={styles.logoContainer}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+          />
+        </ThemedView>
+
+        <ThemedView style={styles.titleContainer}>
+          <ThemedText type="title" style={styles.titleText}>Welcome to NomadEscape!</ThemedText>
+          <HelloWave />
+        </ThemedView>
+
+        {/* Zone de texte pour le sous-titre et la description */}
+        <ThemedView style={styles.stepContainer}>
+          <ThemedText type="subtitle" style={styles.subtitleText}>Discover Malta with Us</ThemedText>
+          <ThemedText style={styles.descriptionText}>
+            NomadEscape is your travel companion to uncover Malta’s hidden gems. Experience top
+            attractions, local tips, and routes for a unique adventure.
+          </ThemedText>
+        </ThemedView>
+
+        {/* Zone de texte pour le sous-titre et la description */}
+        <ThemedView style={styles.stepContainer}>
+          <ThemedText type="subtitle" style={styles.subtitleText}>Explore Like a Local</ThemedText>
+          <ThemedText style={styles.descriptionText}>
+            Discover beaches, museums, restaurants, and more with NomadEscape, tailored for modern
+            explorers seeking authentic experiences on the island.
+          </ThemedText>
+        </ThemedView>
       </ThemedView>
     </ParallaxScrollView>
   );
@@ -47,29 +56,46 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   fullScreenImage: {
     width: '100%',
-    height: '100%',
+    height: 200, // Hauteur de l'image d'en-tête
     resizeMode: 'cover',
     position: 'absolute',
   },
-  header: {
-    width: '100%',
-    padding: 20,
-    backgroundColor: '#FFA726',
-    alignItems: 'center',
+  container: {
+    flex: 1,
+    //paddingTop: 220, // Ajuster pour que le contenu ne soit pas caché par l'image d'en-tête
   },
-  appName: {
-    fontSize: 24,
-    color: '#FFF8E1', // Cream white for the app name text
-    fontWeight: 'bold',
-    fontFamily: 'serif', // Stylized font
+  logoContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  logo: {
+    height: 70,
+    width: 210,
+    resizeMode: 'contain',
   },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginVertical: 20, // Espacement vertical pour le titre
+  },
+  titleText: {
+    color: '#FFA726', // Couleur orangée pour le titre
+    fontSize: 24, // Taille de la police pour le titre
+    fontWeight: 'bold', // Style de police en gras pour le titre
   },
   stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+    padding: 15, // Espacement intérieur pour le texte
+    marginBottom: 15, // Espacement entre les zones de texte
+    // Enlever le fond, bordures et ombres
+  },
+  subtitleText: {
+    color: '#FFA726', // Couleur orangée pour le sous-titre
+    fontSize: 20, // Taille de la police pour le sous-titre
+    fontWeight: 'bold', // Style de police en gras pour le sous-titre
+  },
+  descriptionText: {
+    color: '#FFA726', // Texte de description en jaune orangée
+    fontSize: 16, // Taille de la police pour la description
   },
 });
