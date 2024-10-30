@@ -1,0 +1,75 @@
+import { Image, StyleSheet, Platform } from 'react-native';
+
+import { HelloWave } from '@/components/HelloWave';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+
+export default function HomeScreen() {
+  return (
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#FFCC80', dark: '#FFA726' }}
+      headerImage={
+        <Image
+          source={require('@/assets/images/FondAccueil.jpg')}
+          style={styles.fullScreenImage}
+        />
+      }>
+      {/* Stylized Header */}
+      <ThemedView style={styles.header}>
+        <ThemedText type="header" style={styles.appName}>
+          NomadEscape
+        </ThemedText>
+      </ThemedView>
+
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome to NomadEscape!</ThemedText>
+        <HelloWave />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Discover Malta with Us</ThemedText>
+        <ThemedText>
+          *NomadEscape* is your complete travel guide to explore the hidden gems of Malta. Discover
+          top attractions, local tips, and curated routes for a truly unique experience.
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">What You Can Do</ThemedText>
+        <ThemedText>
+          Explore beaches, museums, restaurants, and much more! *NomadEscape* is designed for
+          modern adventurers seeking new experiences on the island.
+        </ThemedText>
+      </ThemedView>
+    </ParallaxScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  fullScreenImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+    position: 'absolute',
+  },
+  header: {
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFA726',
+    alignItems: 'center',
+  },
+  appName: {
+    fontSize: 24,
+    color: '#FFF8E1', // Cream white for the app name text
+    fontWeight: 'bold',
+    fontFamily: 'serif', // Stylized font
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+});
