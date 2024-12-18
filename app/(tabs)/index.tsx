@@ -1,278 +1,254 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { app, auth, db } from '../../src/firebaseConfig'; // Modifier le chemin d'importation
 import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { getFirestore, setDoc, doc } from 'firebase/firestore'; // Pour Firestore
+  Image, StyleSheet, Keyboard, SafeAreaView, TouchableWithoutFeedback, View, ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, TextInput,
+} from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { firebaseConfig } from '@/firebaseConfig';
+import { ThemedText } from '@/components/ThemedText';
 
-export default function App() {
-  const [showOptions, setShowOptions] = useState(true); // Afficher ou masquer les options "Se connecter" et "Inscription"
-  const [email, onChangeEmail] = useState(''); // État pour l'email
-  const [password, onChangePassword] = useState(''); // État pour le mot de passe
-  const [firstName, onChangeFirstName] = useState(''); // Prénom pour l'inscription
-  const [lastName, onChangeLastName] = useState(''); // Nom pour l'inscription
-  const [isSignIn, setIsSignIn] = useState(false); // Pour savoir si on est en mode connexion ou inscription
-  const [messageSuccess, setMessageSuccess] = useState(''); // Nouveau state pour le message de succès
+const StripeLogo = require('../../assets/images/stripe-icon.jpeg');
+const FIELD_REQUIRED = 'This field is required';
 
-  const emailPassAuth = getAuth(app); // Utiliser l'application Firebase
-  const db = getFirestore(app); // Initialiser Firestore
+// Fonction AddProductForm avec les ajouts demandés
+function AddProductForm() {
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-  // Fonction pour la connexion
-  const login = async () => {
-    signInWithEmailAndPassword(emailPassAuth, email, password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-        setMessageSuccess('Bienvenue ' + user.email + ' !'); // Message de succès après la connexion
-      })
-      .catch((error) => {
-        const errorMessage = error.message;
-        Alert.alert('Erreur : ' + errorMessage);
+  // Hook pour activer ou désactiver la requête
+  const [queryEnabled, toggleQuery] = useState(false);
+
+  // Hook pour le formulaire
+  const { control, handleSubmit, getValues, reset, formState: { errors } } = useForm();
+
+  // Fonction pour ajouter un produit à Firestore
+  const addProduct = async (data: any) => {
+    try {
+      const res = await addDoc(collection(db, 'products'), {
+        name: data.productName,
+        price: Number(data.productPrice) * 100, // Conversion en centimes
       });
+      toggleQuery(false); // Désactiver la requête après succès
+      return res.id;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   };
 
-  // Fonction pour l'inscription et enregistrement dans Firestore
-  const createUser = () => {
-    createUserWithEmailAndPassword(emailPassAuth, email, password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
+  // Requête pour soumettre les données
+  const { data, error, isLoading, status } = useQuery({
+    queryKey: ['newProduct'],
+    queryFn: () => addProduct({
+      productName: getValues('productName'),
+      productPrice: getValues('productPrice'),
+    }),
+    enabled: queryEnabled, // La requête ne s'exécute que si `queryEnabled` est true
+  });
 
-        // Enregistrement des données supplémentaires dans Firestore
-        await setDoc(doc(db, 'utilisateurs', user.uid), {
-          prenom: firstName,
-          nom: lastName,
-          email: email,
-          mdp: password,
-          createdAt: new Date(),
-        });
-
-        setMessageSuccess(user.email + ' a été créé avec succès'); // Message de succès après l'inscription
-      })
-      .catch((error) => {
-        const errorMessage = error.message;
-        Alert.alert('Erreur : ' + errorMessage);
-      });
+  // Fonction pour gérer la soumission du formulaire
+  const submitForm = () => {
+    Keyboard.dismiss(); // Fermer le clavier
+    toggleQuery(true);  // Activer la requête
   };
 
-  // Fonction pour vérifier si tous les champs sont remplis pour l'inscription
-  const isFormValid = () => {
-    return email !== '' && password !== '' && firstName !== '' && lastName !== '';
-  };
-
-  // Fonction pour vérifier si les champs sont remplis pour la connexion
-  const isLoginFormValid = () => {
-    return email !== '' && password !== '';
-  };
+  let priceInput: TextInput | null;
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={{ alignItems: 'baseline', width: '60%' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Affichage du logo au centre */}
-        <Image
-          source={require('@/assets/images/rond.png')} // Remplacez par le chemin de votre logo
-          style={styles.logo}
+      {/* Champ Name */}
+      <ThemedText type="default" style={styles.inputLabel}>Name</ThemedText>
+      <View style={styles.inputOuterContainer}>
+        <Controller
+          name="productName"
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              onSubmitEditing={() => priceInput?.focus()}
+              enterKeyHint="next"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              style={{ ...styles.input, ...styles.inputWithoutContainer }}
+            />
+          )}
         />
-
-        {/* Affichage du message de succès si disponible */}
-        {messageSuccess ? (
-          <View style={styles.successMessageContainer}>
-            <Text style={styles.successMessageText}>{messageSuccess}</Text>
-          </View>
-        ) : null}
-
-        {/* Affichage des options "Se connecter" et "Inscription" */}
-        {showOptions && (
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity 
-              style={styles.optionButton} 
-              onPress={() => { setIsSignIn(true); setShowOptions(false); }} // Passer en mode connexion
-            >
-              <Text style={styles.optionText}>Se connecter</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.optionButton} 
-              onPress={() => { setIsSignIn(false); setShowOptions(false); }} // Passer en mode inscription
-            >
-              <Text style={styles.optionText}>S'inscrire</Text>
-            </TouchableOpacity>
-          </View>
+        {errors.productName && (
+          <ThemedText type="error" style={styles.inputLabel}>
+            This field is required
+          </ThemedText>
         )}
+      </View>
 
-        {/* Flèche pour revenir en arrière */}
-        {!showOptions && (
-          <TouchableOpacity
-            style={styles.arrowButton}
-            onPress={() => setShowOptions(true)} // Revenir à l'écran principal
-          >
-            <Image 
-              source={require('@/assets/images/fleche.png')} // Remplacez par le chemin de votre image
-              style={styles.arrowIcon}
-            />
-          </TouchableOpacity>
+      {/* Champ Price */}
+      <ThemedText type="default" style={styles.inputLabel}>Price</ThemedText>
+      <View style={styles.inputOuterContainer}>
+        <Controller
+          name="productPrice"
+          control={control}
+          rules={{
+            required: FIELD_REQUIRED,
+            pattern: {
+              value: /^[1-9][0-9]*(\.[0-9]{2})?$/,
+              message: 'Invalid price',
+            },
+          }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View style={styles.inputContainer}>
+              <ThemedText style={{ ...styles.inputPrefix, color: Colors.light.text }}>
+                €
+              </ThemedText>
+              <TextInput
+                ref={(input) => { priceInput = input; }}
+                onSubmitEditing={handleSubmit(submitForm)}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                enterKeyHint="done"
+                keyboardType="decimal-pad"
+                style={{ ...styles.input, flex: 1 }}
+              />
+            </View>
+          )}
+        />
+        {errors.productPrice && (
+          <ThemedText type="error" style={styles.inputLabel}>
+            {errors.productPrice?.message}
+          </ThemedText>
         )}
+      </View>
 
-        {/* Formulaire de connexion */}
-        {!showOptions && isSignIn && (
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeEmail}
-              value={email}
-              placeholder="Entrez votre email"
-            />
-
-            <Text style={styles.label}>Mot de passe</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangePassword}
-              value={password}
-              secureTextEntry={true}
-              placeholder="Entrez votre mot de passe"
-            />
-
-            <TouchableOpacity 
-              style={[styles.optionButton, { backgroundColor: isLoginFormValid() ? '#808080' : '#D3D3D3' }]} 
-              onPress={login}
-              disabled={!isLoginFormValid()} // Désactive le bouton si le formulaire n'est pas valide
-            >
-              <Text style={styles.optionText}>OK</Text>
-            </TouchableOpacity>
-          </View>
+      {/* Indicateurs et bouton de soumission */}
+      <View style={styles.bottomContainer}>
+        {isLoading && <ActivityIndicator />}
+        {status === 'success' && data !== null && (
+          <Ionicons name="checkmark-sharp" size={25} color="green" />
         )}
-
-        {/* Formulaire d'inscription */}
-        {!showOptions && !isSignIn && (
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>Prénom</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeFirstName}
-              value={firstName}
-              placeholder="Entrez votre prénom"
-            />
-
-            <Text style={styles.label}>Nom</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeLastName}
-              value={lastName}
-              placeholder="Entrez votre nom"
-            />
-
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeEmail}
-              value={email}
-              placeholder="Entrez votre email"
-            />
-
-            <Text style={styles.label}>Mot de passe</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangePassword}
-              value={password}
-              secureTextEntry={true}
-              placeholder="Entrez votre mot de passe"
-            />
-
-            <TouchableOpacity 
-              style={[styles.optionButton, { backgroundColor: isFormValid() ? '#808080' : '#D3D3D3' }]} 
-              onPress={createUser}
-              disabled={!isFormValid()} // Désactive le bouton si le formulaire n'est pas valide
-            >
-              <Text style={styles.optionText}>OK</Text>
-            </TouchableOpacity>
-          </View>
+        {status === 'error' || (status === 'success' && data === null) && (
+          <Ionicons name="alert-circle" size={25} color="red" />
         )}
-      </ScrollView>
+        <Pressable
+          disabled={isLoading}
+          style={styles.submit}
+          onPress={handleSubmit(submitForm)}
+        >
+          <ThemedText style={styles.submitText}>Add Product</ThemedText>
+        </Pressable>
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
+// Fonction principale HomeScreen
+export default function HomeScreen() {
+  const queryClient = new QueryClient();
+
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.title}>
+          <Image source={StripeLogo} style={styles.logo} />
+          <ThemedText type="title">Stripe Tutorial</ThemedText>
+          <ThemedText type="subtitle" style={styles.subtitle}>
+            Input your product's details
+          </ThemedText>
+        </View>
+
+        <QueryClientProvider client={queryClient}>
+          <AddProductForm />
+        </QueryClientProvider>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
+  );
+}
+
+// Styles
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#003366', // Bleu marine
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
-  scrollContainer: {
-    justifyContent: 'center', // Centrer verticalement
-    alignItems: 'center', // Centrer horizontalement
-    paddingBottom: 20, // Ajouter un peu d'espace en bas
-  },
-  logo: {
-    width: 150,    // Largeur du logo
-    height: 150,   // Hauteur du logo
-    marginBottom: 50, // Espacement entre le logo et les boutons
-    marginTop: 70,
-  },
-  successMessageContainer: {
-    backgroundColor: '#FFCCE5', // Fond rose clair
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 20,
-    width: '80%',
+  title: {
+    display: 'flex',
     alignItems: 'center',
   },
-  successMessageText: {
-    color: '#D50000', // Texte rouge foncé
-    fontSize: 16,
-    fontWeight: 'bold',
+  logo: {
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    marginBottom: 25,
   },
-  optionButton: {
-    backgroundColor: '#808080', // Couleur de fond des boutons d'options
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 5,
-    marginBottom: 10, // Espacement entre les boutons
-    width: '80%', // Les boutons occupent 80% de la largeur de l'écran
-    alignItems: 'center', // Centrer le texte à l'intérieur du bouton
+  subtitle: {
+    marginTop: 5,
+    marginBottom: 25,
   },
-  optionText: {
-    color: '#FFFFFF', // Couleur du texte des boutons
-    fontSize: 18,
-    textAlign: 'center', // Centrer le texte dans le bouton
-  },
-  optionsContainer: {
-    marginTop: 20, // Espacement entre le logo et les options
-    width: '100%', // Pour que les boutons occupent toute la largeur
-    alignItems: 'center', // Centrer les boutons dans la vue
-  },
-  formContainer: {
-    marginTop: 20,
-    width: '80%',
-    marginLeft: 70,  // Décalage des libellés à gauche
-    alignItems: 'flex-start', // Aligner les éléments à gauche
-  },
-  label: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    marginBottom: 8,
+  inputLabel: {
+    marginBottom: 5,
+    marginLeft: 5,
   },
   input: {
-    height: 40,
-    width: '80%',  // Largeur du champ de saisie
-    marginBottom: 12,
+    paddingVertical: 13,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+    color: '#333',
+    borderRadius: 10,
+    width: '100%',
+  },
+  inputWithoutContainer: {
     borderWidth: 1,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#FFFFFF',
+    borderColor: '#ccc',
+    marginBottom: 10,
   },
-  arrowButton: {
-    marginTop: 20, // Espacement depuis le haut pour être juste au-dessus du formulaire
-    marginLeft: 70,  // Décalage des libellés à gauche
-    alignSelf: 'flex-start', // Aligner la flèche à gauche
-    zIndex: 1, // S'assurer que la flèche soit au-dessus du formulaire
+  inputOuterContainer: {
+    marginBottom: 20,
+    width: '100%',
   },
-  arrowIcon: {
-    width: 30, 
-    height: 30, // Taille de la flèche
-  }
+  inputContainer: {
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    backgroundColor: '#f9f9f9',
+    color: '#333',
+    marginBottom: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    overflow: 'hidden',
+  },
+  inputPrefix: {
+    paddingLeft: 10,
+  },
+  submit: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#635DF6',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+  },
+  submitText: {
+    color: '#f9f9f9',
+  },
+  bottomContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 15,
+    justifyContent: 'flex-end',
+    width: '100%',
+    alignItems: 'center',
+  },
 });

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "App1",
-    "slug": "App1",
+    "name": "NomadEscape",
+    "slug": "NomadEscape",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
