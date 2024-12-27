@@ -1,7 +1,8 @@
-import { initializeApp } from "firebase/app";
+// Import des modules nécessaires de Firebase
+import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 // Votre configuration Firebase
 const firebaseConfig = {
@@ -16,9 +17,11 @@ const firebaseConfig = {
 };
 
 // Initialisation de Firebase
-const app = initializeApp(firebaseConfig);
+// Vérifie si Firebase est déjà initialisé avant de procéder
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const analytics = getAnalytics(app); // Si vous avez besoin de l'analyse
 const auth = getAuth(app); // Authentification
 const db = getFirestore(app); // Firestore
 
-export { app, auth, db }; // Exportez auth et db si nécessaire dans d'autres parties du code
+// Exportation des modules Firebase
+export { app, auth, db };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { app, auth, db } from '../../src/firebaseConfig'; // Modifier le chemin d'importation
+import { app, auth, db } from '../src/firebaseConfig'; // Modifier le chemin d'importation
 import {
   getAuth,
   createUserWithEmailAndPassword,
