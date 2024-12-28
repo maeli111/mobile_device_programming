@@ -52,20 +52,9 @@ export default function TabLayout() {
         }}
       />
       
-      {/* Écran "Home" */}
-      <Tabs.Screen
-        name="home"  // Correspond à `app/screens/Home.tsx`
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-
       {/* Écran "Map" */}
       <Tabs.Screen
-        name="navigation"  // Correspond à `app/screens/Navigation.tsx`
+        name="map"  // Correspond à `app/screens/Map.tsx`
         options={{
           title: 'Navigation',
           tabBarIcon: ({ color, focused }) => (
@@ -73,6 +62,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      
     </Tabs>
   );
 }

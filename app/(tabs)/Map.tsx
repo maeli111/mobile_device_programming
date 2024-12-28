@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     paddingBottom: 60, 
   },
+  
   title: {
     fontSize: 30,
     fontWeight: 'bold',
