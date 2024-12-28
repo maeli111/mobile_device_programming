@@ -5,7 +5,6 @@ import MapView, { Marker } from 'react-native-maps';
 const HomeScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-
       {/* Titre de la page */}
       <Text style={styles.title}>Explore Malta</Text>
       <Text style={styles.subtitle}>Discover the best tourist spots in Malta</Text>
@@ -158,12 +157,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
-    paddingBottom: 20,
+    paddingBottom: 60, 
   },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
-    marginTop: 20,
+    marginTop: 50,  
     marginBottom: 10,
     color: '#333',
   },
