@@ -5,7 +5,7 @@ import MapView, { Marker } from 'react-native-maps';
 const HomeScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue sur NomadEscape!</Text>
+      <Text style={styles.title}>Welcome to NomadEscape!</Text>
       <Text style={styles.subtitle}>Voici tout ce qu'il y a à faire :</Text>
       
       {/* Carte de Malte */}
