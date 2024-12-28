@@ -6,8 +6,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import { auth, db } from '@/firebaseConfig'; // Importation de l'auth et db déjà initialisés
+import { firebaseConfig } from '@/firebaseConfig';
 import { ThemedText } from '@/components/ThemedText';
 
 const StripeLogo = require('../../assets/images/stripe-icon.jpeg');
@@ -15,8 +16,8 @@ const FIELD_REQUIRED = 'This field is required';
 
 // Fonction AddProductForm avec les ajouts demandés
 function AddProductForm() {
-  // Ici, on n'initialise plus Firebase, car il est déjà fait dans firebaseConfig.js.
-  // Nous utilisons directement l'instance db pour Firestore.
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
   // Hook pour activer ou désactiver la requête
   const [queryEnabled, toggleQuery] = useState(false);
@@ -46,7 +47,7 @@ function AddProductForm() {
       productName: getValues('productName'),
       productPrice: getValues('productPrice'),
     }),
-    enabled: queryEnabled, // La requête ne s'exécute que si `queryEnabled` est true
+    enabled: queryEnabled, // La requête ne s'exécute que si queryEnabled est true
   });
 
   // Fonction pour gérer la soumission du formulaire
@@ -249,5 +250,5 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     width: '100%',
     alignItems: 'center',
-  },
+  },
 });

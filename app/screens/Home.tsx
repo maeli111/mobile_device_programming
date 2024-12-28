@@ -25,6 +25,7 @@ const Home = () => {
         title="Connexion"
         onPress={() => navigation.navigate('LoginScreen')} // Redirection vers l'écran Connexion
       />
+
     </View>
   );
 };

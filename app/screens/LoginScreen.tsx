@@ -1,278 +1,227 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { app, auth, db } from '../src/firebaseConfig'; // Modifier le chemin d'importation
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { getFirestore, setDoc, doc } from 'firebase/firestore'; // Pour Firestore
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { firebaseConfig } from '@/firebaseConfig';
+import { useNavigation } from '@react-navigation/native';
 
-export default function App() {
-  const [showOptions, setShowOptions] = useState(true); // Afficher ou masquer les options "Se connecter" et "Inscription"
-  const [email, onChangeEmail] = useState(''); // État pour l'email
-  const [password, onChangePassword] = useState(''); // État pour le mot de passe
-  const [firstName, onChangeFirstName] = useState(''); // Prénom pour l'inscription
-  const [lastName, onChangeLastName] = useState(''); // Nom pour l'inscription
-  const [isSignIn, setIsSignIn] = useState(false); // Pour savoir si on est en mode connexion ou inscription
-  const [messageSuccess, setMessageSuccess] = useState(''); // Nouveau state pour le message de succès
+// ✅ Initialisation Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-  const emailPassAuth = getAuth(app); // Utiliser l'application Firebase
-  const db = getFirestore(app); // Initialiser Firestore
+// ✅ Composant de formulaire
+function AuthForm() {
+  const navigation = useNavigation();
 
-  // Fonction pour la connexion
-  const login = async () => {
-    signInWithEmailAndPassword(emailPassAuth, email, password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-        setMessageSuccess('Bienvenue ' + user.email + ' !'); // Message de succès après la connexion
-      })
-      .catch((error) => {
-        const errorMessage = error.message;
-        Alert.alert('Erreur : ' + errorMessage);
+  const [isSignIn, setIsSignIn] = useState(true); // Switch Connexion/Inscription
+  const [queryEnabled, setQueryEnabled] = useState(false);
+
+  const { control, handleSubmit, getValues, reset, formState: { errors } } = useForm();
+  
+  // Fonction Inscription
+  const signUp = async (data: any) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
+      await addDoc(collection(db, 'users'), {
+        uid: user.uid,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        createdAt: new Date(),
       });
+
+      Alert.alert('Inscription réussie', `Bienvenue ${data.firstName} !`);
+      navigation.navigate('NavigationScreen'); // ✅ Redirection vers HomeScreen
+      return user.uid;
+    } 
+    
+    catch (e) {
+      console.error(e);
+      Alert.alert('Erreur', 'Échec de l’inscription');
+      return null;
+    }
   };
 
-  // Fonction pour l'inscription et enregistrement dans Firestore
-  const createUser = () => {
-    createUserWithEmailAndPassword(emailPassAuth, email, password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-
-        // Enregistrement des données supplémentaires dans Firestore
-        await setDoc(doc(db, 'utilisateurs', user.uid), {
-          prenom: firstName,
-          nom: lastName,
-          email: email,
-          mdp: password,
-          createdAt: new Date(),
-        });
-
-        setMessageSuccess(user.email + ' a été créé avec succès'); // Message de succès après l'inscription
-      })
-      .catch((error) => {
-        const errorMessage = error.message;
-        Alert.alert('Erreur : ' + errorMessage);
-      });
+  // Fonction Connexion
+  const signIn = async (data: any) => {
+    try {
+      console.log("Tentative de connexion avec :", data.email);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+      console.log("Connexion réussie :", user);
+      Alert.alert('Connexion réussie', `Bienvenue ${user.email} !`);      
+      navigation.navigate('NavigationScreen');
+      return user.uid;
+    } 
+    
+    catch (e) {
+      console.error("Erreur Firebase Auth :", e.code, e.message);
+      Alert.alert('Erreur', `Échec de la connexion : ${e.message}`);
+      return null;
+    }
   };
+  
 
-  // Fonction pour vérifier si tous les champs sont remplis pour l'inscription
-  const isFormValid = () => {
-    return email !== '' && password !== '' && firstName !== '' && lastName !== '';
-  };
+  const { isLoading, status } = useQuery({
+    queryKey: ['auth'],
+    queryFn: () => (isSignIn ? signIn(getValues()) : signUp(getValues())),
+    enabled: queryEnabled,
+  });
 
-  // Fonction pour vérifier si les champs sont remplis pour la connexion
-  const isLoginFormValid = () => {
-    return email !== '' && password !== '';
+  const submitForm = () => {
+    setQueryEnabled(true);
   };
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Affichage du logo au centre */}
-        <Image
-          source={require('@/assets/images/rond.png')} // Remplacez par le chemin de votre logo
-          style={styles.logo}
-        />
+        <Text style={styles.title}>{isSignIn ? 'Connexion' : 'Inscription'}</Text>
 
-        {/* Affichage du message de succès si disponible */}
-        {messageSuccess ? (
-          <View style={styles.successMessageContainer}>
-            <Text style={styles.successMessageText}>{messageSuccess}</Text>
-          </View>
-        ) : null}
-
-        {/* Affichage des options "Se connecter" et "Inscription" */}
-        {showOptions && (
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity 
-              style={styles.optionButton} 
-              onPress={() => { setIsSignIn(true); setShowOptions(false); }} // Passer en mode connexion
-            >
-              <Text style={styles.optionText}>Se connecter</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.optionButton} 
-              onPress={() => { setIsSignIn(false); setShowOptions(false); }} // Passer en mode inscription
-            >
-              <Text style={styles.optionText}>S'inscrire</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Champs Prénom et Nom */}
+        {!isSignIn && (
+          <>
+            <Text style={styles.label}>Prénom</Text>
+            <Controller
+              name="firstName"
+              control={control}
+              rules={{ required: !isSignIn }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput style={styles.input} onChangeText={onChange} value={value} placeholder="Entrez votre prénom" />
+              )}
+            />
+            {errors.firstName && <Text style={styles.errorText}>Ce champ est requis</Text>}
+            
+            <Text style={styles.label}>Nom</Text>
+            <Controller
+              name="lastName"
+              control={control}
+              rules={{ required: !isSignIn }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput style={styles.input} onChangeText={onChange} value={value} placeholder="Entrez votre nom" />
+              )}
+            />
+            {errors.lastName && <Text style={styles.errorText}>Ce champ est requis</Text>}
+          </>
         )}
 
-        {/* Flèche pour revenir en arrière */}
-        {!showOptions && (
-          <TouchableOpacity
-            style={styles.arrowButton}
-            onPress={() => setShowOptions(true)} // Revenir à l'écran principal
-          >
-            <Image 
-              source={require('@/assets/images/fleche.png')} // Remplacez par le chemin de votre image
-              style={styles.arrowIcon}
-            />
+        {/* Champs Email et Mot de Passe alignés à gauche */}
+        <View style={styles.leftAlignedContainer}>
+          <Text style={styles.label}>Email</Text>
+          <Controller
+            name="email"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <TextInput style={styles.input} onChangeText={onChange} value={value} placeholder="Entrez votre email" />
+            )}
+          />
+          {errors.email && <Text style={styles.errorText}>L'email est requis</Text>}
+
+          <Text style={styles.label}>Mot de passe</Text>
+          <Controller
+            name="password"
+            control={control}
+            rules={{ required: true, minLength: 6 }}
+            render={({ field: { onChange, value } }) => (
+              <TextInput style={styles.input} secureTextEntry onChangeText={onChange} value={value} placeholder="Mot de passe" />
+            )}
+          />
+          {errors.password && <Text style={styles.errorText}>Le mot de passe doit contenir au moins 6 caractères</Text>}
+        </View>
+
+        {/* Bouton de soumission */}
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={handleSubmit(submitForm)}>
+            <Text style={styles.buttonText}>{isSignIn ? 'Se connecter' : "S'inscrire"}</Text>
           </TouchableOpacity>
         )}
 
-        {/* Formulaire de connexion */}
-        {!showOptions && isSignIn && (
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeEmail}
-              value={email}
-              placeholder="Entrez votre email"
-            />
-
-            <Text style={styles.label}>Mot de passe</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangePassword}
-              value={password}
-              secureTextEntry={true}
-              placeholder="Entrez votre mot de passe"
-            />
-
-            <TouchableOpacity 
-              style={[styles.optionButton, { backgroundColor: isLoginFormValid() ? '#808080' : '#D3D3D3' }]} 
-              onPress={login}
-              disabled={!isLoginFormValid()} // Désactive le bouton si le formulaire n'est pas valide
-            >
-              <Text style={styles.optionText}>OK</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Formulaire d'inscription */}
-        {!showOptions && !isSignIn && (
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>Prénom</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeFirstName}
-              value={firstName}
-              placeholder="Entrez votre prénom"
-            />
-
-            <Text style={styles.label}>Nom</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeLastName}
-              value={lastName}
-              placeholder="Entrez votre nom"
-            />
-
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeEmail}
-              value={email}
-              placeholder="Entrez votre email"
-            />
-
-            <Text style={styles.label}>Mot de passe</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangePassword}
-              value={password}
-              secureTextEntry={true}
-              placeholder="Entrez votre mot de passe"
-            />
-
-            <TouchableOpacity 
-              style={[styles.optionButton, { backgroundColor: isFormValid() ? '#808080' : '#D3D3D3' }]} 
-              onPress={createUser}
-              disabled={!isFormValid()} // Désactive le bouton si le formulaire n'est pas valide
-            >
-              <Text style={styles.optionText}>OK</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {/* Switch Connexion/Inscription */}
+        <TouchableOpacity onPress={() => setIsSignIn(!isSignIn)}>
+          <Text style={styles.switchText}>
+            {isSignIn ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+// ✅ Composant Principal
+export default function App() {
+  const queryClient = new QueryClient();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthForm />
+    </QueryClientProvider>
+  );
+}
+
+// ✅ Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003366', // Bleu marine
+    backgroundColor: '#f9f9f9',
   },
   scrollContainer: {
-    justifyContent: 'center', // Centrer verticalement
-    alignItems: 'center', // Centrer horizontalement
-    paddingBottom: 20, // Ajouter un peu d'espace en bas
-  },
-  logo: {
-    width: 150,    // Largeur du logo
-    height: 150,   // Hauteur du logo
-    marginBottom: 50, // Espacement entre le logo et les boutons
-    marginTop: 70,
-  },
-  successMessageContainer: {
-    backgroundColor: '#FFCCE5', // Fond rose clair
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 20,
-    width: '80%',
+    padding: 20,
     alignItems: 'center',
   },
-  successMessageText: {
-    color: '#D50000', // Texte rouge foncé
-    fontSize: 16,
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
-  },
-  optionButton: {
-    backgroundColor: '#808080', // Couleur de fond des boutons d'options
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 5,
-    marginBottom: 10, // Espacement entre les boutons
-    width: '80%', // Les boutons occupent 80% de la largeur de l'écran
-    alignItems: 'center', // Centrer le texte à l'intérieur du bouton
-  },
-  optionText: {
-    color: '#FFFFFF', // Couleur du texte des boutons
-    fontSize: 18,
-    textAlign: 'center', // Centrer le texte dans le bouton
-  },
-  optionsContainer: {
-    marginTop: 20, // Espacement entre le logo et les options
-    width: '100%', // Pour que les boutons occupent toute la largeur
-    alignItems: 'center', // Centrer les boutons dans la vue
-  },
-  formContainer: {
-    marginTop: 20,
-    width: '80%',
-    marginLeft: 70,  // Décalage des libellés à gauche
-    alignItems: 'flex-start', // Aligner les éléments à gauche
+    marginBottom: 20,
+    textAlign: 'center',
   },
   label: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    marginBottom: 8,
+    fontSize: 14,
+    marginBottom: 5,
+    marginTop: 10,
   },
   input: {
-    height: 40,
-    width: '80%',  // Largeur du champ de saisie
-    marginBottom: 12,
     borderWidth: 1,
+    borderColor: '#ccc',
     padding: 10,
     borderRadius: 5,
-    backgroundColor: '#FFFFFF',
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    width: '100%',
   },
-  arrowButton: {
-    marginTop: 20, // Espacement depuis le haut pour être juste au-dessus du formulaire
-    marginLeft: 70,  // Décalage des libellés à gauche
-    alignSelf: 'flex-start', // Aligner la flèche à gauche
-    zIndex: 1, // S'assurer que la flèche soit au-dessus du formulaire
+  leftAlignedContainer: {
+    width: '100%',
+    alignSelf: 'flex-start',
   },
-  arrowIcon: {
-    width: 30, 
-    height: 30, // Taille de la flèche
-  }
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  switchText: {
+    marginTop: 20,
+    textAlign: 'center',
+    color: '#007BFF',
+  },
 });
