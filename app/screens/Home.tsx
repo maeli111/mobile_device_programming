@@ -1,10 +1,9 @@
-// /screens/Home.tsx
 import React from 'react';
 import { View, Text, Image, Button, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router'; // Remplacer useNavigate par useRouter
 
 const Home = () => {
-  const navigation = useNavigation();
+  const router = useRouter(); // Utiliser useRouter pour la navigation
 
   return (
     <View style={styles.container}>
@@ -17,15 +16,14 @@ const Home = () => {
       {/* Bouton Stripe */}
       <Button
         title="Stripe"
-        onPress={() => navigation.navigate('StripeScreen')} // Redirection vers l'écran Stripe
+        onPress={() => router.push('../screens/StripeScreen')} // Utiliser router.push avec le chemin
       />
       
       {/* Bouton Connexion */}
       <Button
         title="Connexion"
-        onPress={() => navigation.navigate('LoginScreen')} // Redirection vers l'écran Connexion
+        onPress={() => router.push('../login')} // Utiliser router.push avec le chemin
       />
-
     </View>
   );
 };

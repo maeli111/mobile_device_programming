@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Image, StyleSheet, Keyboard, SafeAreaView, TouchableWithoutFeedback, View, ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, TextInput,
+  Image, StyleSheet, Keyboard, SafeAreaView, TouchableWithoutFeedback, View, ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, TextInput
 } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
@@ -10,9 +10,23 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebaseConfig';
 import { ThemedText } from '@/components/ThemedText';
+import { useNavigate } from 'react-router-native'; // Importer useNavigate pour la navigation
 
+// StripeLogo pour l'image
 const StripeLogo = require('../../assets/images/stripe-icon.jpeg');
 const FIELD_REQUIRED = 'This field is required';
+
+// Header avec un bouton retour
+const Header = () => {
+  const navigate = useNavigate(); // Hook pour naviguer
+  return (
+    <View style={styles.header}>
+      <Pressable onPress={() => navigate('/')}>
+        <Ionicons name="arrow-back" size={30} color="black" />
+      </Pressable>
+    </View>
+  );
+};
 
 // Fonction AddProductForm avec les ajouts demandés
 function AddProductForm() {
@@ -154,6 +168,7 @@ export default function HomeScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
+        <Header /> {/* Ajouter le Header avec le bouton retour */}
         <View style={styles.title}>
           <Image source={StripeLogo} style={styles.logo} />
           <ThemedText type="title">Stripe Tutorial</ThemedText>
@@ -250,5 +265,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     width: '100%',
     alignItems: 'center',
-  },
+  },
+  header: {
+    width: '100%',
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 20,
+    backgroundColor: '#f4f4f4',
+  },
 });
