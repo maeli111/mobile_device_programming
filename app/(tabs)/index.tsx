@@ -4,7 +4,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import Header from '../screens/Header'; // Import Header
 import BottomNavigator from '../screens/BottomNavigator'; // Import BottomNavigator
 import { useNavigation } from '@react-navigation/native';
-
+ 
 export default function ConnexionScreen() {
   const router = useRouter(); // Pour gérer la navigation
   const navigation = useNavigation();

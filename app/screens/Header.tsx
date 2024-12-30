@@ -37,7 +37,7 @@ const Header = () => {
     { id: '6', title: 'Feedback', action: () => router.push('/Feedback') },
     { id: '7', title: 'My profile', action: () => router.push('/Profile') },
     { id: '8', title: 'About Us', action: () => router.push('/Search') },
-    { id: '9', title: 'Add an activity', action: () => router.push('/AddActivity') },
+    { id: '9', title: 'Modify activities', action: () => router.push('/ModifyActivities') },
   ];
 
   return (
