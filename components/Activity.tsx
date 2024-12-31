@@ -30,12 +30,17 @@ export default function Activity({
       }}
       onPress={onPress}
     >
-      <View>
+      <View style={styles.activityDetails}>
         <ThemedText type="titleSmall" style={styles.activityTitle}>
           {activityTitle}
         </ThemedText>
 
-        <ThemedText type="titleSmall" style={styles.activityDescription}>
+        <ThemedText
+          numberOfLines={2}
+          ellipsizeMode="tail"
+          type="titleSmall"
+          style={styles.activityDescription}
+        >
           {activityDescription}
         </ThemedText>
       </View>
@@ -64,36 +69,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-
     paddingVertical: 15,
     paddingLeft: 20,
     paddingRight: 15,
     borderRadius: 10,
     marginBottom: 15,
-    shadowColor: '#B53302', // Ombre rouge foncé pour donner un effet 3D
+    shadowColor: '#B53302',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 3, // Pour l'effet ombre sur Android
+    elevation: 3,
+  },
+  activityDetails: {
+    flex: 1, // Permet de prendre l'espace disponible
+    marginRight: 10, // Crée un espacement avec la section de droite
   },
   activityRHS: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     gap: 7,
   },
   activityTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#B53302', // Rouge foncé pour le titre de l'activité
+    color: '#B53302',
+    marginBottom: 4,
   },
   activityDescription: {
     fontSize: 14,
-    color: '#E97D01', // Orange foncé pour la description de l'activité
+    color: '#E97D01',
+    lineHeight: 16,
+    maxWidth: '90%', // Limite la largeur pour éviter le chevauchement
   },
   activityPrice: {
     fontSize: 16,
-    color: '#FECA64', // Jaune doré pour le prix de l'activité
+    color: '#FECA64',
+    fontWeight: 'bold',
   },
 });

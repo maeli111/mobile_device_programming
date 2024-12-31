@@ -5,14 +5,14 @@ import {
 import { Controller, useForm } from 'react-hook-form';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebaseConfig';
 import { ThemedText } from '@/components/ThemedText';
-import { useRouter } from 'expo-router';
 import Header from '../screens/Header'; // Assurez-vous que le fichier header.tsx est bien situé dans le bon répertoire
 import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous que le fichier bottomNavigator.tsx est bien situé dans le bon répertoire
+import 'react-native-get-random-values'; // Ajoutez ceci pour activer crypto.getRandomValues dans React Native
+import { v4 as uuidv4 } from 'uuid'; // Importer uuid
 
 // Logo
 const ActivityLogo = require('../../assets/images/activity-icon.png');
@@ -32,7 +32,10 @@ function AddActivityForm() {
   // Fonction pour ajouter une activité à Firestore
   const addActivity = async (data: any) => {
     try {
+      const customId = uuidv4(); // Générer un ID unique
+  
       const res = await addDoc(collection(db, 'activities'), {
+        id: customId, // Ajouter l'ID personnalisé
         title: data.activityTitle,
         description: data.activityDescription,
         duration: Number(data.activityDuration), // Durée en minutes
@@ -40,6 +43,8 @@ function AddActivityForm() {
         managerName: data.managerName, // Nouveau champ Manager Name
         managerEmail: data.managerEmail, // Nouveau champ Manager Email
       });
+  
+      console.log('Document ajouté avec ID personnalisé :', customId);
       toggleQuery(false); // Désactiver la requête après succès
       return res.id;
     } catch (e) {
@@ -269,7 +274,6 @@ export default function HomeScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
-        {/* Header en dehors du ScrollView */}
         <Header />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -286,12 +290,12 @@ export default function HomeScreen() {
           </QueryClientProvider>
         </ScrollView>
 
-        {/* Bottom Tab Navigator en dehors du ScrollView */}
         <BottomTabNavigator />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 }
+
 
 // Styles
 const styles = StyleSheet.create({
@@ -314,7 +318,8 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 10,
-    marginBottom: 25,
+    marginBottom: 15,
+    marginTop:10,
   },
   subtitle: {
     marginTop: 5,

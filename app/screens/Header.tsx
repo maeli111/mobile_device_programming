@@ -36,7 +36,7 @@ const Header = () => {
     { id: '5', title: 'My reservations', action: () => router.push('/Reservations') },
     { id: '6', title: 'Feedback', action: () => router.push('/Feedback') },
     { id: '7', title: 'My profile', action: () => router.push('/Profile') },
-    { id: '8', title: 'About Us', action: () => router.push('/Search') },
+    { id: '8', title: 'About Us', action: () => router.push('/AboutUs') },
     { id: '9', title: 'Modify activities', action: () => router.push('/ModifyActivities') },
   ];
 

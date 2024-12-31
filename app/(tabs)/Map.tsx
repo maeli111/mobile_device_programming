@@ -1,163 +1,168 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import Header from '../screens/Header'; // Assurez-vous que le fichier header.tsx est bien situé dans le bon répertoire
-import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous que le fichier bottomNavigator.tsx est bien situé dans le bon répertoire
+import Header from '../screens/Header'; // Assurez-vous du bon chemin
+import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous du bon chemin
 
 const HomeScreen = () => {
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <>
+      {/* Header en dehors de la vue principale */}
       <Header />
 
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        
-        {/* Titre de la page */}
-        <Text style={styles.title}>Explore Malta</Text>
-        <Text style={styles.subtitle}>Discover the best tourist spots in Malta</Text>
-        
-        {/* Section de la carte */}
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: 35.944694, // Latitude pour Malte
-              longitude: 14.381008, // Longitude pour Malte
-              latitudeDelta: 0.5,
-              longitudeDelta: 0.5,
-            }}
-          >
-            {/* Points d'intérêt */}
-            <Marker
-              coordinate={{ latitude: 35.898908, longitude: 14.514553 }}
-              title="Valetta"
-              description="Capital of Malta"
-            />
-            <Marker
-              coordinate={{ latitude: 35.885834, longitude: 14.403056 }}
-              title="Mdina"
-              description="The Silent City"
-            />
-            <Marker
-              coordinate={{ latitude: 36.014118, longitude: 14.324206 }}
-              title="Blue Lagoon"
-              description="Lagoon with crystal-clear water"
-            />
-            <Marker
-              coordinate={{ latitude: 35.933869, longitude: 14.3444612 }}
-              title="Golden Bay"
-              description="A popular sandy beach"
-            />
-            <Marker
-              coordinate={{ latitude: 35.8326, longitude: 14.4147 }}
-              title="Hagar Qim Temples"
-              description="A prehistoric temple complex"
-            />
-            <Marker
-              coordinate={{ latitude: 35.84194, longitude: 14.54306 }}
-              title="Marsaxlokk"
-              description="A traditional fishing village"
-            />
-            <Marker
-              coordinate={{ latitude: 35.8769 , longitude: 14.5219 }}
-              title="The Three Cities"
-              description="The historical fortified cities of Birgu, Senglea, and Cospicua"
-            />
-            <Marker
-              coordinate={{ latitude: 36.0534, longitude: 14.2387 }}
-              title="Gozo"
-              description="The second island of Malta"
-            />
-            <Marker
-              coordinate={{ latitude: 35.944694, longitude: 14.381008 }}
-              title="Popeye Village"
-              description="The film set for the 1980 Popeye movie"
-            />
-            <Marker
-              coordinate={{ latitude: 35.9238, longitude: 14.4895 }}
-              title="Paceville"
-              description="The nightlife hub of Malta"
-            />
-            <Marker
-              coordinate={{ latitude: 35.944694, longitude: 14.381008 }}
-              title="Paradise Bay"
-              description="A secluded sandy beach"
-            />
-            <Marker
-              coordinate={{ latitude: 35.8331286, longitude: 14.5621187 }}
-              title="St. Peter's Pool"
-              description="A natural swimming pool"
-            />
-            <Marker
-              coordinate={{ latitude: 35.912224, longitude: 14.504167 }}
-              title="Sliema"
-              description="A popular and dynamic area"
-            />
-          </MapView>
-        </View>
-
-        {/* Liste des points d'intérêt */}
-        <View style={styles.poiList}>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Valetta</Text>
-            <Text style={styles.poiDescription}>The capital of Malta, known for its historic architecture and UNESCO World Heritage Sites.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Mdina</Text>
-            <Text style={styles.poiDescription}>The Silent City, a medieval walled city offering stunning views and a rich history.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Blue Lagoon</Text>
-            <Text style={styles.poiDescription}>A lagoon with crystal-clear water, perfect for swimming and relaxation.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Golden Bay</Text>
-            <Text style={styles.poiDescription}>A sandy beach that’s perfect for a relaxing day in the sun.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Hagar Qim Temples</Text>
-            <Text style={styles.poiDescription}>A prehistoric temple complex, offering insight into Malta's ancient past.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Marsaxlokk</Text>
-            <Text style={styles.poiDescription}>A traditional fishing village, famous for its colorful boats and seafood markets.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>The Three Cities</Text>
-            <Text style={styles.poiDescription}>Birgu, Senglea, and Cospicua, historical fortified cities with rich cultural heritage.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Gozo</Text>
-            <Text style={styles.poiDescription}>Malta's sister island, known for its tranquil atmosphere and natural beauty.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Popeye Village</Text>
-            <Text style={styles.poiDescription}>The movie set for the 1980 Popeye film, now a fun theme park.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Paceville</Text>
-            <Text style={styles.poiDescription}>Malta’s entertainment and nightlife hotspot, full of bars and clubs.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Paradise Bay</Text>
-            <Text style={styles.poiDescription}>A quiet and beautiful bay, perfect for a relaxing day at the beach.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>St. Peter's Pool</Text>
-            <Text style={styles.poiDescription}>A natural swimming pool with crystal-clear waters, ideal for a refreshing swim.</Text>
-          </View>
-          <View style={styles.poiItem}>
-            <Text style={styles.poiTitle}>Sliema</Text>
-            <Text style={styles.poiDescription}>A bustling area known for its shopping, dining, and lively promenade.</Text>
-          </View>
-        </View>
-
-      </ScrollView>
+      {/* Contenu principal avec ScrollView */}
       
-      {/* BottomTabNavigator */}
-      <BottomTabNavigator />
-    </View>
+      <View style={styles.container}>
 
+        <ScrollView contentContainerStyle={styles.contentContainer}>
+          
+          {/* Titre de la page */}
+          <Text style={styles.title}>Explore Malta</Text>
+          <Text style={styles.subtitle}>Discover the best tourist spots in Malta</Text>
+          
+          {/* Section de la carte */}
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: 35.944694, // Latitude pour Malte
+                longitude: 14.381008, // Longitude pour Malte
+                latitudeDelta: 0.5,
+                longitudeDelta: 0.5,
+              }}
+            >
+              {/* Points d'intérêt */}
+              <Marker
+                coordinate={{ latitude: 35.898908, longitude: 14.514553 }}
+                title="Valetta"
+                description="Capital of Malta"
+              />
+              <Marker
+                coordinate={{ latitude: 35.885834, longitude: 14.403056 }}
+                title="Mdina"
+                description="The Silent City"
+              />
+              <Marker
+                coordinate={{ latitude: 36.014118, longitude: 14.324206 }}
+                title="Blue Lagoon"
+                description="Lagoon with crystal-clear water"
+              />
+              <Marker
+                coordinate={{ latitude: 35.933869, longitude: 14.3444612 }}
+                title="Golden Bay"
+                description="A popular sandy beach"
+              />
+              <Marker
+                coordinate={{ latitude: 35.8326, longitude: 14.4147 }}
+                title="Hagar Qim Temples"
+                description="A prehistoric temple complex"
+              />
+              <Marker
+                coordinate={{ latitude: 35.84194, longitude: 14.54306 }}
+                title="Marsaxlokk"
+                description="A traditional fishing village"
+              />
+              <Marker
+                coordinate={{ latitude: 35.8769 , longitude: 14.5219 }}
+                title="The Three Cities"
+                description="The historical fortified cities of Birgu, Senglea, and Cospicua"
+              />
+              <Marker
+                coordinate={{ latitude: 36.0534, longitude: 14.2387 }}
+                title="Gozo"
+                description="The second island of Malta"
+              />
+              <Marker
+                coordinate={{ latitude: 35.944694, longitude: 14.381008 }}
+                title="Popeye Village"
+                description="The film set for the 1980 Popeye movie"
+              />
+              <Marker
+                coordinate={{ latitude: 35.9238, longitude: 14.4895 }}
+                title="Paceville"
+                description="The nightlife hub of Malta"
+              />
+              <Marker
+                coordinate={{ latitude: 35.944694, longitude: 14.381008 }}
+                title="Paradise Bay"
+                description="A secluded sandy beach"
+              />
+              <Marker
+                coordinate={{ latitude: 35.8331286, longitude: 14.5621187 }}
+                title="St. Peter's Pool"
+                description="A natural swimming pool"
+              />
+              <Marker
+                coordinate={{ latitude: 35.912224, longitude: 14.504167 }}
+                title="Sliema"
+                description="A popular and dynamic area"
+              />
+            </MapView>
+          </View>
+
+          {/* Liste des points d'intérêt */}
+          <View style={styles.poiList}>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Valetta</Text>
+              <Text style={styles.poiDescription}>The capital of Malta, known for its historic architecture and UNESCO World Heritage Sites.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Mdina</Text>
+              <Text style={styles.poiDescription}>The Silent City, a medieval walled city offering stunning views and a rich history.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Blue Lagoon</Text>
+              <Text style={styles.poiDescription}>A lagoon with crystal-clear water, perfect for swimming and relaxation.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Golden Bay</Text>
+              <Text style={styles.poiDescription}>A sandy beach that’s perfect for a relaxing day in the sun.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Hagar Qim Temples</Text>
+              <Text style={styles.poiDescription}>A prehistoric temple complex, offering insight into Malta's ancient past.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Marsaxlokk</Text>
+              <Text style={styles.poiDescription}>A traditional fishing village, famous for its colorful boats and seafood markets.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>The Three Cities</Text>
+              <Text style={styles.poiDescription}>Birgu, Senglea, and Cospicua, historical fortified cities with rich cultural heritage.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Gozo</Text>
+              <Text style={styles.poiDescription}>Malta's sister island, known for its tranquil atmosphere and natural beauty.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Popeye Village</Text>
+              <Text style={styles.poiDescription}>The movie set for the 1980 Popeye film, now a fun theme park.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Paceville</Text>
+              <Text style={styles.poiDescription}>Malta’s entertainment and nightlife hotspot, full of bars and clubs.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Paradise Bay</Text>
+              <Text style={styles.poiDescription}>A quiet and beautiful bay, perfect for a relaxing day at the beach.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>St. Peter's Pool</Text>
+              <Text style={styles.poiDescription}>A natural swimming pool with crystal-clear waters, ideal for a refreshing swim.</Text>
+            </View>
+            <View style={styles.poiItem}>
+              <Text style={styles.poiTitle}>Sliema</Text>
+              <Text style={styles.poiDescription}>A bustling area known for its shopping, dining, and lively promenade.</Text>
+            </View>
+          </View>
+
+        </ScrollView>
+        
+      </View>
+
+      {/* BottomTabNavigator en dehors de la vue principale */}
+      <BottomTabNavigator />
+    </>
   );
 };
 
@@ -172,19 +177,17 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingBottom: 60, // Pour donner de l'espace pour la barre de navigation en bas
+    paddingBottom: 60,
   },
   title: {
     fontSize: 34,
     fontWeight: '700',
-    fontFamily: 'HelveticaNeue-Bold',
     marginTop: 40,
     marginBottom: 5,
     color: '#B53302',
   },
   subtitle: {
     fontSize: 16,
-    fontFamily: 'HelveticaNeue-Light',
     color: '#E97D01',
     marginBottom: 20,
   },
@@ -229,12 +232,10 @@ const styles = StyleSheet.create({
   poiTitle: {
     fontSize: 18,
     fontWeight: '600',
-    fontFamily: 'HelveticaNeue-Medium',
     color: '#B53302',
   },
   poiDescription: {
     fontSize: 14,
-    fontFamily: 'HelveticaNeue-Regular',
     color: '#E97D01',
     marginTop: 5,
   },

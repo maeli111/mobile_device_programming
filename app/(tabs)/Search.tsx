@@ -1,4 +1,4 @@
-import { StyleSheet, SafeAreaView, View, Text, Pressable, FlatList, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, Pressable, ActivityIndicator, Alert, ScrollView, RefreshControl  } from 'react-native';
 import React, { useState } from 'react';
 import Activity from '@/components/Activity';
 import { collection, DocumentData, getDocs, getFirestore } from 'firebase/firestore';
@@ -82,13 +82,13 @@ function ActivityList() {
     <View style={styles.activitiesContainer}>
       {isPending && isLoading && <ActivityIndicator />}
       {!isPending && (
-        <FlatList
-          refreshing={isLoading}
-          onRefresh={() => refetch()}
-          data={data}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 30 }}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => refetch()} />}
+        >
+          {data && data.map(item => (
             <Activity
+              key={item.id}
               activePayment={paymentActiveActivityID}
               activityID={item.id}
               onPress={async () => await openPaymentSheet(item.data.price, item.id)}
@@ -96,8 +96,8 @@ function ActivityList() {
               activityPrice={item.data.price}
               activityDescription={item.data.description}
             />
-          )}
-        />
+          ))}
+        </ScrollView>
       )}
     </View>
   );
@@ -126,29 +126,31 @@ export default function TabTwoScreen() {
 
   return (
     <StripeProvider publishableKey={publicKey}>
-    <SafeAreaView style={styles.container}>
-      {/* Ajouter le Header */}
-      <Header />
+      <SafeAreaView style={styles.container}>
+        {/* Ajouter le Header */}
+        <Header />
 
-      <View style={styles.headingContainer}>
-        <Text style={styles.title}>All our activities</Text>
-        
-        <Pressable onPress={async () => await displayEditPaymentInfo()}>
-          <Text style={{ color: '#FCAC23' }}>Edit Payment Info</Text>
-        </Pressable>
-      </View>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.headingContainer}>
+            <Text style={styles.title}>All our activities</Text>
+            
+            <Pressable onPress={async () => await displayEditPaymentInfo()}>
+              <Text style={{ color: '#FCAC23' }}>Edit Payment Info</Text>
+            </Pressable>
+          </View>
 
-      <CustomerSheetBeta.CustomerSheet visible={showEditPayment} onResult={() => setShowEditPayment(false)} customerId={customerID} customerEphemeralKeySecret={ephemeralKey} />
+          <CustomerSheetBeta.CustomerSheet visible={showEditPayment} onResult={() => setShowEditPayment(false)} customerId={customerID} customerEphemeralKeySecret={ephemeralKey} />
 
-      {/* Contenu des activités */}
-      <QueryClientProvider client={queryClient}>
-        <ActivityList />
-      </QueryClientProvider>
+          {/* Contenu des activités */}
+          <QueryClientProvider client={queryClient}>
+            <ActivityList />
+          </QueryClientProvider>
+        </ScrollView>
 
-      {/* Ajouter le BottomTabNavigator */}
-      <BottomTabNavigator />
-    </SafeAreaView>
-  </StripeProvider>
+        {/* Ajouter le BottomTabNavigator */}
+        <BottomTabNavigator />
+      </SafeAreaView>
+    </StripeProvider>
   );
 }
 
@@ -156,7 +158,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FEDB9B', // Utilisation de la couleur beige clair comme fond principal
-    marginTop: 70, // Espacement en haut pour que le Header ne soit pas collé
     paddingHorizontal: 20, // Ajouter un peu d'espace de chaque côté
   },
   activitiesContainer: {
@@ -205,5 +206,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
+  },
+  scrollViewContent: {
+    paddingBottom: 20, // Evite que le contenu soit collé en bas
   },
 });

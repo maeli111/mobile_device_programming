@@ -34,7 +34,7 @@ export default function ConnexionScreen() {
       {/* Contenu principal */}
       <View style={styles.content}>
         <Text style={styles.title}>Page de Connexion</Text>
-        <Button title="Aller à Booking" onPress={booking} />
+        <Button title="Aller à Bookingx" onPress={booking} />
         <Button title="Aller à Accueil" onPress={index} />
       </View>
 
