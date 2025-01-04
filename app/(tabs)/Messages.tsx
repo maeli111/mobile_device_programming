@@ -1,15 +1,26 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import Header from '../screens/Header'; // Import the Header component
+import BottomTabNavigator from '../screens/BottomNavigator'; // Import the Bottom Navigation component
 
 const UnderConstructionPage = () => {
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://via.placeholder.com/150' }} // Remplacez l'URL par l'image de votre choix
-        style={styles.image}
-      />
-      <Text style={styles.title}>Page en construction</Text>
-      <Text style={styles.message}>Cette page est actuellement en cours de construction. Revenez plus tard !</Text>
+      {/* Header component at the top */}
+      <Header />
+
+      {/* Main content of the Under Construction page */}
+      <View style={styles.content}>
+        <Image
+          source={{ uri: 'https://via.placeholder.com/150' }} // Replace with your desired image URL
+          style={styles.image}
+        />
+        <Text style={styles.title}>Page Under Construction</Text>
+        <Text style={styles.message}>This page is currently under construction. Please check back later!</Text>
+      </View>
+
+      {/* Bottom navigation component at the bottom */}
+      <BottomTabNavigator />
     </View>
   );
 };
@@ -22,6 +33,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f4f4',
     padding: 20,
   },
+  content: {
+    alignItems: 'center',
+    marginBottom: 50, // To give some space above the bottom navigation
+  },
   image: {
     width: 150,
     height: 150,
@@ -30,13 +45,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#B53302',
+    color: '#B53302', // Dark red color for the title
     marginBottom: 10,
   },
   message: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#555',
+    color: '#555', // Dark grey color for the message
     marginTop: 10,
   },
 });

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView, ScrollView } from 'react-native';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { app } from '../../firebaseConfig'; // Assure-toi que le chemin est correct
 import { useNavigation } from '@react-navigation/native';
+import Header from '../screens/Header'; // Assurez-vous du bon chemin
+import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous du bon chemin
 
 export default function FeedbackScreen() {
     const [feedback, setFeedback] = useState('');
@@ -35,44 +37,70 @@ export default function FeedbackScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Feedback</Text>
-            <Text style={styles.subtitle}>We value your feedback. Please share your thoughts below:</Text>
+        <SafeAreaView style={styles.container}>
+            {/* Header */}
+            <Header />
 
-            <TextInput
-                style={styles.textInput}
-                multiline
-                numberOfLines={4}
-                placeholder="Enter your feedback here..."
-                value={feedback}
-                onChangeText={setFeedback}
-            />
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+                <View style={styles.mainContent}>
+                    <Text style={styles.title}>Feedback</Text>
+                    <Text style={styles.subtitle}>We value your feedback. Please share your thoughts below:</Text>
 
-            <TouchableOpacity
-                style={styles.submitButton}
-                onPress={handleSubmit}
-                disabled={isSubmitting}
-            >
-                <Text style={styles.submitButtonText}>
-                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                </Text>
-            </TouchableOpacity>
-        </View>
+                    <TextInput
+                        style={styles.textInput}
+                        multiline
+                        numberOfLines={4}
+                        placeholder="Enter your feedback here..."
+                        value={feedback}
+                        onChangeText={setFeedback}
+                    />
+
+                    <TouchableOpacity
+                        style={styles.submitButton}
+                        onPress={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        <Text style={styles.submitButtonText}>
+                            {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+
+            {/* BottomTabNavigator */}
+            <BottomTabNavigator />
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f9f9f9',
-        padding: 20,
-        justifyContent: 'center',
+        backgroundColor: '#FEDB9B', // Fond beige clair pour l'écran principal
+        paddingHorizontal: 20, // Espacement à gauche et droite
+    },
+    scrollViewContent: {
+        flexGrow: 1,
+        paddingBottom: 20, // Espace pour éviter que le contenu touche le bas
+    },
+    mainContent: {
+        flex: 1,
+        backgroundColor: '#fff',
+        marginTop: 20,
+        borderRadius: 8,
+        padding: 15,
+        shadowColor: '#B53302', // Ombre subtile
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 3, // Pour Android
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 10,
+        color: '#B53302', // Rouge foncé pour le titre
         textAlign: 'center',
+        marginBottom: 10,
     },
     subtitle: {
         fontSize: 14,

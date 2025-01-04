@@ -2,28 +2,32 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { addDoc, collection } from 'firebase/firestore';
-import { db } from '@/firebaseConfig'; // ✅ Import direct de db depuis firebaseConfig
+import { db } from '@/firebaseConfig'; // ✅ Direct import of db from firebaseConfig
 import { Ionicons } from '@expo/vector-icons';
+import Header from '../screens/Header'; // Ensure the correct path
+import BottomTabNavigator from '../screens/BottomNavigator'; // Ensure the correct path
 
 const AppointmentScreen = () => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Handle date confirmation and save to Firestore
   const handleConfirm = async (date: Date) => {
     setSelectedDate(date);
     setDatePickerVisibility(false);
     setIsSubmitting(true);
     try {
+      // Save appointment details in Firestore
       await addDoc(collection(db, 'appointments'), {
-        userId: 'user123', // Remplace par l'ID réel de l'utilisateur connecté
-        serviceId: 'service456', // Remplace par l'ID réel du service sélectionné
+        userId: 'user123', // Replace with the actual logged-in user's ID
+        serviceId: 'service456', // Replace with the actual selected service ID
         date,
         status: 'pending',
       });
-      console.log('✅ Rendez-vous ajouté avec succès');
+      console.log('✅ Appointment successfully added');
     } catch (error) {
-      console.error('❌ Erreur lors de l\'ajout du rendez-vous :', error);
+      console.error('❌ Error adding appointment:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -31,47 +35,62 @@ const AppointmentScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>📅 Prendre un Rendez-vous</Text>
-      
-      <View style={styles.card}>
-        <Text style={styles.label}>Choisissez une date et une heure :</Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => setDatePickerVisibility(true)}
-        >
-          <Ionicons name="calendar" size={24} color="#fff" />
-          <Text style={styles.buttonText}>Sélectionner une date</Text>
-        </TouchableOpacity>
+      {/* Header component */}
+      <Header />
 
-        {selectedDate && (
-          <View style={styles.dateContainer}>
-            <Ionicons name="time" size={20} color="#4CAF50" />
-            <Text style={styles.dateText}>
-              {selectedDate.toLocaleString()}
-            </Text>
-          </View>
-        )}
+      {/* Main content */}
+      <View style={styles.content}>
+        <Text style={styles.title}>📅 Schedule an Appointment</Text>
+        
+        <View style={styles.card}>
+          <Text style={styles.label}>Select a date and time:</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => setDatePickerVisibility(true)}
+          >
+            <Ionicons name="calendar" size={24} color="#fff" />
+            <Text style={styles.buttonText}>Select a Date</Text>
+          </TouchableOpacity>
 
-        {isSubmitting && <Text style={styles.loadingText}>Enregistrement...</Text>}
+          {/* Display selected date */}
+          {selectedDate && (
+            <View style={styles.dateContainer}>
+              <Ionicons name="time" size={20} color="#4CAF50" />
+              <Text style={styles.dateText}>
+                {selectedDate.toLocaleString()}
+              </Text>
+            </View>
+          )}
+
+          {/* Show loading state while submitting */}
+          {isSubmitting && <Text style={styles.loadingText}>Saving...</Text>}
+        </View>
+
+        {/* Date Picker Modal */}
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="datetime"
+          onConfirm={handleConfirm}
+          onCancel={() => setDatePickerVisibility(false)}
+        />
       </View>
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="datetime"
-        onConfirm={handleConfirm}
-        onCancel={() => setDatePickerVisibility(false)}
-      />
+      {/* Bottom Navigation component */}
+      <BottomTabNavigator />
     </SafeAreaView>
   );
 };
 
 export default AppointmentScreen;
 
-// ✅ STYLES MODERNES
+// ✅ MODERN STYLES
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,

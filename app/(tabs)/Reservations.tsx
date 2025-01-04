@@ -1,25 +1,47 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, SafeAreaView, ScrollView } from 'react-native';
+import Header from '../screens/Header'; // Assurez-vous du bon chemin
+import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous du bon chemin
 
 const UnderConstructionPage = () => {
   return (
-    <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://via.placeholder.com/150' }} // Remplacez l'URL par l'image de votre choix
-        style={styles.image}
-      />
-      <Text style={styles.title}>Page en construction</Text>
-      <Text style={styles.message}>Cette page est actuellement en cours de construction. Revenez plus tard !</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <Header />
+
+      {/* Contenu principal */}
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.mainContent}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/150' }} // Remplacez l'URL par l'image de votre choix
+            style={styles.image}
+          />
+          <Text style={styles.title}>Page en construction</Text>
+          <Text style={styles.message}>Cette page est actuellement en cours de construction. Revenez plus tard !</Text>
+        </View>
+      </ScrollView>
+
+      {/* BottomTabNavigator */}
+      <BottomTabNavigator />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f4f4f4',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f4f4f4',
+    paddingBottom: 60, // Espacement pour éviter que le contenu touche le bas
+  },
+  mainContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
     padding: 20,
   },
   image: {
@@ -32,6 +54,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#B53302',
     marginBottom: 10,
+    textAlign: 'center',
   },
   message: {
     fontSize: 16,
@@ -42,3 +65,4 @@ const styles = StyleSheet.create({
 });
 
 export default UnderConstructionPage;
+
