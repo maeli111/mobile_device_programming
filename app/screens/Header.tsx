@@ -9,7 +9,7 @@ const Header = () => {
 
   // Fonction pour fermer le menu
   const closeMenu = () => {
-    setIsMenuVisible(false);
+    setIsMenuVisible(false); blablabla
   };
 
   // Fonction pour ouvrir le menu
