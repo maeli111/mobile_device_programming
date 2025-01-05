@@ -1,29 +1,29 @@
-import React, { useEffect } from 'react'; // ✅ Ajout de React et useEffect
+import React, { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Header from '../screens/Header'; // Import Header
-import BottomNavigator from '../screens/BottomNavigator'; // Import BottomNavigator
+import Header from '../screens/Header';
+import BottomNavigator from '../screens/BottomNavigator';
 import { useNavigation } from '@react-navigation/native';
- 
+
 export default function ConnexionScreen() {
-  const router = useRouter(); // Pour gérer la navigation
+  const router = useRouter();
   const navigation = useNavigation();
 
-  // Définir un titre personnalisé
-  React.useEffect(() => {
+  // Définir un titre personnalisé et cacher le header par défaut
+  useEffect(() => {
     navigation.setOptions({
       headerShown: false, // Cache le header automatique
     });
   }, [navigation]);
 
-  // Redirige vers la page d'inscription
-  const booking = () => {
+  // Fonction pour rediriger vers la page de Booking
+  const goToBooking = () => {
     router.push('/Booking');
   };
-  
-  // Redirige vers la page d'accueil
-  const index = () => {
-    router.push('/');
+
+  // Fonction pour rediriger vers la page de connexion
+  const goToLogin = () => {
+    router.push('/LoginScreen');
   };
 
   return (
@@ -34,8 +34,22 @@ export default function ConnexionScreen() {
       {/* Contenu principal */}
       <View style={styles.content}>
         <Text style={styles.title}>Page de Connexion</Text>
-        <Button title="Aller à Bookingx" onPress={booking} />
-        <Button title="Aller à Accueil" onPress={index} />
+
+        <View style={styles.buttonContainer}>
+          {/* Bouton pour aller à la page de réservation */}
+          <Button
+            title="Aller à la réservation"
+            onPress={goToBooking}
+            color="#E97D01" // Couleur bouton réservation
+          />
+
+          {/* Bouton pour aller à la page de connexion */}
+          <Button
+            title="Aller à la connexion"
+            onPress={goToLogin}
+            color="#B53302" // Couleur bouton connexion
+          />
+        </View>
       </View>
 
       {/* Bottom Navigator */}
@@ -74,8 +88,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '80%',
     gap: 15,
-  },
-  button: {
-    color: '#E97D01', // Couleur des boutons
   },
 });
