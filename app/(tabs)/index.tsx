@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Image } from 'react-native';
 import Header from '../screens/Header';
 import BottomNavigator from '../screens/BottomNavigator';
 import { useNavigation } from '@react-navigation/native';
@@ -16,11 +16,6 @@ export default function ConnexionScreen() {
     });
   }, [navigation]);
 
-  // Fonction pour rediriger vers la page de Booking
-  const goToBooking = () => {
-    router.push('/Booking');
-  };
-
   // Fonction pour rediriger vers la page de connexion
   const goToLogin = () => {
     router.push('/LoginScreen');
@@ -33,21 +28,21 @@ export default function ConnexionScreen() {
 
       {/* Contenu principal */}
       <View style={styles.content}>
-        <Text style={styles.title}>Page de Connexion</Text>
+        {/* Image */}
+        <Image
+          source={require('../../assets/images/hiking.png')} // Option 1 : image locale
+          style={styles.image}
+          resizeMode="contain" // Garde les proportions de l'image
+        />
 
+        <Text style={styles.title}>Welcome to NomadEscape!</Text>
+
+        {/* Bouton pour aller à la page de connexion */}
         <View style={styles.buttonContainer}>
-          {/* Bouton pour aller à la page de réservation */}
           <Button
-            title="Aller à la réservation"
-            onPress={goToBooking}
-            color="#E97D01" // Couleur bouton réservation
-          />
-
-          {/* Bouton pour aller à la page de connexion */}
-          <Button
-            title="Aller à la connexion"
+            title="Sign-In"
             onPress={goToLogin}
-            color="#B53302" // Couleur bouton connexion
+            color="#B53302" // Couleur du bouton
           />
         </View>
       </View>
@@ -81,12 +76,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 40,
+    marginVertical: 20,
     color: '#B53302', // Texte titre principal
     textAlign: 'center',
   },
   buttonContainer: {
     width: '80%',
-    gap: 15,
+    marginTop: 20,
+  },
+  image: {
+    width: '80%', // Largeur de l'image (80% de l'écran)
+    height: 200,  // Hauteur de l'image
+    marginBottom: 20, // Espacement avec le titre
   },
 });

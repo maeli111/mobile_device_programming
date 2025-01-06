@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Assure-toi d'avoir installé @expo/vector-icons
-import { useRouter } from 'expo-router';  // Utilisation de router pour la navigation
+import { useRouter } from 'expo-router'; // Utilisation de router pour la navigation
 
 const Header = () => {
   const router = useRouter(); // Gestion de la navigation
@@ -9,7 +9,7 @@ const Header = () => {
 
   // Fonction pour fermer le menu
   const closeMenu = () => {
-    setIsMenuVisible(false); 
+    setIsMenuVisible(false);
   };
 
   // Fonction pour ouvrir le menu
@@ -17,19 +17,14 @@ const Header = () => {
     setIsMenuVisible(true);
   };
 
-  // Fonction pour naviguer vers Home
-  const navigateToHome = () => {
-    router.push('/');
-  };
-
-  // Fonction pour naviguer vers LoginScreen
-  const navigateToLogin = () => {
-    router.push('/LoginScreen');
+  // Fonction pour rediriger vers la page de Booking
+  const goToBooking = () => {
+    router.push('/Booking');
   };
 
   // Contenu du menu
   const menuItems = [
-    { id: '1', title: 'Home', action: navigateToHome },
+    { id: '1', title: 'Home', action: () => router.push('/') },
     { id: '2', title: 'Messages', action: () => router.push('/Messages') },
     { id: '3', title: 'Search', action: () => router.push('/Search') },
     { id: '4', title: 'Map', action: () => router.push('/Map') },
@@ -38,6 +33,7 @@ const Header = () => {
     { id: '7', title: 'My profile', action: () => router.push('/Profile') },
     { id: '8', title: 'About Us', action: () => router.push('/AboutUs') },
     { id: '9', title: 'Modify activities', action: () => router.push('/ModifyActivities') },
+    { id: '10', title: 'Booking', action: goToBooking }, // Ajout de Booking
   ];
 
   return (
@@ -48,12 +44,12 @@ const Header = () => {
       </TouchableOpacity>
 
       {/* Titre au centre */}
-      <TouchableOpacity style={styles.iconButton} onPress={navigateToHome}>
+      <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/')}>
         <Text style={styles.title}>NOMADESCAPE</Text>
       </TouchableOpacity>
 
       {/* Icône Profil (à droite) */}
-      <TouchableOpacity style={styles.iconButton} onPress={navigateToLogin}>
+      <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/LoginScreen')}>
         <Ionicons name="person-circle-outline" size={28} color="#FEDB9B" />
       </TouchableOpacity>
 
@@ -70,7 +66,13 @@ const Header = () => {
               data={menuItems}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.menuItem} onPress={() => { item.action(); closeMenu(); }}>
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    item.action();
+                    closeMenu();
+                  }}
+                >
                   <Text style={styles.menuItemText}>{item.title}</Text>
                 </TouchableOpacity>
               )}
@@ -119,16 +121,17 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Ombre de fond pour le menu
+    justifyContent: 'flex-start', // Aligne le menu en haut de l'écran
+    alignItems: 'flex-start', // Aligne le menu à gauche de l'écran
   },
 
   menuContainer: {
     backgroundColor: '#FFFFFF',
     width: 250,
     padding: 20,
-    borderRadius: 10,
+    borderBottomRightRadius: 10,
+    borderTopRightRadius: 10,
   },
 
   menuItem: {

@@ -1,24 +1,27 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { app } from "../../firebaseConfig";
+import { getFirestore, doc, getDoc } from "firebase/firestore"; // Import Firestore
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
-import Header from '../screens/Header'; // Assurez-vous que le fichier header.tsx est bien situé dans le bon répertoire
-import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous que le fichier bottomNavigator.tsx est bien situé dans le bon répertoire
+import Header from '../screens/Header'; 
+import BottomTabNavigator from '../screens/BottomNavigator'; 
 
 export default function UserProfileScreen() {
-    const router = useRouter(); // To handle navigation
-    
-    const userInfo = {
-        firstName: "John",
-        lastName: "Doe",
-    };
+    const router = useRouter();
+    const auth = getAuth(app);
+    const db = getFirestore(app); // Firestore instance
 
-    // Sign out the user
+    const [userInfo, setUserInfo] = useState({
+        firstName: '',
+        lastName: '',
+    });
+
+    const [loading, setLoading] = useState(true);
+
+    // Fonction de déconnexion
     function handleSignOut() {
-        const auth = getAuth(app);
-
         signOut(auth)
             .then(() => {
                 router.push('/LoginScreen');
@@ -26,10 +29,43 @@ export default function UserProfileScreen() {
             .catch((err) => console.log(err));
     }
 
-    // Navigate to reservation history
+    // Naviguer vers l'historique des réservations
     const reservations = () => {
         router.push('/Reservations');
     };
+
+    // Fetch des données utilisateur depuis Firestore
+    useEffect(() => {
+        const user = auth.currentUser;
+        if (user) {
+            // Récupérer les données depuis Firestore en utilisant l'UID de l'utilisateur
+            const userDocRef = doc(db, "users", user.uid); // Assure-toi que la collection s'appelle 'users'
+            getDoc(userDocRef)
+                .then((docSnap) => {
+                    if (docSnap.exists()) {
+                        // Affiche tout le document pour voir sa structure
+                        const userData = docSnap.data();
+                        console.log("Données utilisateur récupérées: ", userData); // Vérifie ce qui est récupéré
+
+                        setUserInfo({
+                            firstName: userData.firstName || "Pas de prénom", // Valeur par défaut si introuvable
+                            lastName: userData.lastName || "Pas de nom", // Valeur par défaut si introuvable
+                        });
+                    } else {
+                        console.log("Aucun document trouvé !");
+                        Alert.alert("Erreur", "Données utilisateur introuvables dans Firestore.");
+                    }
+                    setLoading(false); // Fin du chargement
+                })
+                .catch((error) => {
+                    console.log("Erreur lors de la récupération du document:", error);
+                    Alert.alert("Erreur", "Échec du chargement des informations utilisateur");
+                    setLoading(false); // Fin du chargement en cas d'erreur
+                });
+        } else {
+            console.log("Aucun utilisateur connecté");
+        }
+    }, []); // La dépendance vide [] permet de lancer useEffect une seule fois au montage du composant
 
     return (
         <View style={styles.container}>
@@ -40,41 +76,46 @@ export default function UserProfileScreen() {
                 <Text style={styles.header_text}>My Profile</Text>
 
                 <View style={styles.section_container}>
+                    {loading ? (
+                        <Text style={styles.cardText}>Loading...</Text>
+                    ) : (
+                        <>
+                            <View style={styles.user_card}>
+                                <View style={styles.title_container}>
+                                    <Text style={styles.title}>
+                                        {userInfo.firstName} {userInfo.lastName}
+                                    </Text>
+                                </View>
+                            </View>
 
-                    <View style={styles.user_card}>
-                        <View style={styles.title_container}>
-                            <Text style={styles.title}>
-                                {userInfo.firstName} {userInfo.lastName}
-                            </Text>
-                        </View>
-                    </View>
+                            <TouchableOpacity style={styles.card}>
+                                <Text style={styles.cardText}>Account Information</Text>
+                            </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.card}>
-                        <Text style={styles.cardText}>Account Information</Text>
-                    </TouchableOpacity>
+                            <TouchableOpacity style={styles.card} onPress={reservations}>
+                                <Text style={styles.cardText}>Past Appointments</Text>
+                            </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.card} onPress={reservations}>
-                        <Text style={styles.cardText}>Past Appointments</Text>
-                    </TouchableOpacity>
+                            <TouchableOpacity style={styles.card}>
+                                <Text style={styles.cardText}>Feedback</Text>
+                            </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.card}>
-                        <Text style={styles.cardText}>Feedback</Text>
-                    </TouchableOpacity>
-
-                    <View style={styles.logout_container}>
-                        <TouchableOpacity
-                            style={styles.logout_button}
-                            onPress={handleSignOut}
-                        >
-                            <Text style={styles.logout_text}>Log Out</Text>
-                            <Feather
-                                style={styles.icon}
-                                name="log-out"
-                                size={24}
-                                color="#FF6347" // Tomato red
-                            />
-                        </TouchableOpacity>
-                    </View>
+                            <View style={styles.logout_container}>
+                                <TouchableOpacity
+                                    style={styles.logout_button}
+                                    onPress={handleSignOut}
+                                >
+                                    <Text style={styles.logout_text}>Log Out</Text>
+                                    <Feather
+                                        style={styles.icon}
+                                        name="log-out"
+                                        size={24}
+                                        color="#FF6347" // Tomato red
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </>
+                    )}
                 </View>
             </ScrollView>
 

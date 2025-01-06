@@ -1,40 +1,33 @@
-import React, { useState } from 'react'; 
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, ScrollView } from 'react-native'; 
-import { Controller, useForm } from 'react-hook-form'; 
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'; 
-import { initializeApp } from 'firebase/app'; 
-import { getFirestore, collection, addDoc } from 'firebase/firestore'; 
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'; 
-import { firebaseConfig } from '@/firebaseConfig';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert, ScrollView } from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
 import { useRouter } from 'expo-router';
-import Header from '../screens/Header'; // Assurez-vous que le fichier header.tsx est bien situé dans le bon répertoire
-import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous que le fichier bottomNavigator.tsx est bien situé dans le bon répertoire
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { firebaseConfig } from '@/firebaseConfig'; // Ta configuration Firebase
+import { initializeApp } from 'firebase/app';
+import Header from '../screens/Header';
+import BottomTabNavigator from '../screens/BottomNavigator'; 
 
+// Initialisation Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
 
 function AuthForm() {
   const router = useRouter(); // Pour gérer la navigation
 
   const [isSignIn, setIsSignIn] = useState(true); // Switch Connexion/Inscription
-  const [queryEnabled, setQueryEnabled] = useState(false);
+  const [user, setUser] = useState(null); // Définir user en tant que null ou User
 
   const { control, handleSubmit, getValues, reset, formState: { errors } } = useForm();
-  
+
   // Fonction Inscription
-  const signUp = async (data: any) => {
+  const signUp = async (data) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      await addDoc(collection(db, 'users'), {
-        uid: user.uid,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        createdAt: new Date(),
-      });
+      // Ajouter l'utilisateur dans la collection 'users'
+      // Ce code n'ajoute pas directement l'utilisateur à la Firestore, tu peux ajouter cette fonctionnalité plus tard si tu en as besoin
 
       Alert.alert('Inscription réussie', `Bienvenue ${data.firstName} !`);
       router.push('/Profile');  // Rediriger vers la page profile
@@ -47,7 +40,7 @@ function AuthForm() {
   };
 
   // Fonction Connexion
-  const signIn = async (data: any) => {
+  const signIn = async (data) => {
     try {
       console.log('Tentative de connexion avec :', data.email);
       const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
@@ -63,14 +56,22 @@ function AuthForm() {
     }
   };
 
-  const { isLoading, status } = useQuery({
-    queryKey: ['auth'],
-    queryFn: () => (isSignIn ? signIn(getValues()) : signUp(getValues())),
-    enabled: queryEnabled,
-  });
+  // Gestion de l'état de l'utilisateur (si l'utilisateur est déjà connecté)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser); // Mettre à jour l'état de l'utilisateur
+        console.log("Utilisateur déjà connecté :", currentUser);
+        router.push("/Profile"); // Rediriger vers le profil
+      } else {
+        setUser(null); // Si l'utilisateur n'est pas connecté, réinitialiser l'état
+      }
+    });
+    return unsubscribe; // Nettoyage de l'abonnement
+  }, []);
 
   const submitForm = () => {
-    setQueryEnabled(true);
+    isSignIn ? signIn(getValues()) : signUp(getValues());
   };
 
   return (
@@ -137,13 +138,9 @@ function AuthForm() {
         </View>
 
         {/* Bouton de soumission */}
-        {isLoading ? (
-          <ActivityIndicator />
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handleSubmit(submitForm)}>
-            <Text style={styles.buttonText}>{isSignIn ? 'Se connecter' : "S'inscrire"}</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.button} onPress={handleSubmit(submitForm)}>
+          <Text style={styles.buttonText}>{isSignIn ? 'Se connecter' : "S'inscrire"}</Text>
+        </TouchableOpacity>
 
         {/* Switch Connexion/Inscription */}
         <TouchableOpacity onPress={() => setIsSignIn(!isSignIn)}>
@@ -152,29 +149,24 @@ function AuthForm() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-      
+
       {/* BottomTabNavigator */}
       <BottomTabNavigator />
     </KeyboardAvoidingView>
   );
 }
 
-// ✅ Composant Principal
+// Composant Principal
 export default function App() {
-  const queryClient = new QueryClient();
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthForm />
-    </QueryClientProvider>
+    <AuthForm />
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FECA64', // Utilisation d'une couleur principale
+    backgroundColor: '#FECA64',
   },
   scrollContainer: {
     padding: 30,
@@ -185,14 +177,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     marginTop: 20,
-    color: '#B53302', // Utilisation de la couleur primaire pour le titre
+    color: '#B53302',
     textAlign: 'center',
   },
   label: {
     fontSize: 16,
     marginBottom: 5,
     marginTop: 10,
-    color: '#E97D01', // Mise à jour pour avoir la même couleur que "Pas encore de compte ?"
+    color: '#E97D01',
   },
   input: {
     borderWidth: 1,
@@ -209,7 +201,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   errorText: {
-    color: '#B53302', // Couleur d'erreur
+    color: '#B53302',
     fontSize: 12,
     marginBottom: 10,
   },
@@ -229,7 +221,7 @@ const styles = StyleSheet.create({
   switchText: {
     marginTop: 20,
     textAlign: 'center',
-    color: '#E97D01', // Couleur de "Pas encore de compte ?"
+    color: '#E97D01',
     fontSize: 14,
   },
 });
