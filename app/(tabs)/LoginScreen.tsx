@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert, ScrollView } from 'react-native';
-import { Controller, useForm } from 'react-hook-form';
+import React, { useState } from 'react'; 
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, ScrollView } from 'react-native'; 
+import { Controller, useForm } from 'react-hook-form'; 
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'; 
+import { initializeApp } from 'firebase/app'; 
+import { getFirestore, collection, addDoc } from 'firebase/firestore'; 
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth'; 
+import { firebaseConfig } from '@/firebaseConfig';
 import { useRouter } from 'expo-router';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { firebaseConfig } from '@/firebaseConfig'; // Ta configuration Firebase
@@ -26,8 +31,15 @@ function AuthForm() {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      // Ajouter l'utilisateur dans la collection 'users'
-      // Ce code n'ajoute pas directement l'utilisateur à la Firestore, tu peux ajouter cette fonctionnalité plus tard si tu en as besoin
+      await addDoc(collection(db, 'users'), {
+        uid: user.uid,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        createdAt: new Date(),
+      });
+
+      await setPersistence(auth, browserLocalPersistence);
 
       Alert.alert('Inscription réussie', `Bienvenue ${data.firstName} !`);
       router.push('/Profile');  // Rediriger vers la page profile

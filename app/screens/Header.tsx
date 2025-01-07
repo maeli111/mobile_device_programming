@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Assure-toi d'avoir installé @expo/vector-icons
 import { useRouter } from 'expo-router'; // Utilisation de router pour la navigation
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Import Firebase Auth
 
 const Header = () => {
-  const router = useRouter(); // Gestion de la navigation
-  const [isMenuVisible, setIsMenuVisible] = useState(false); // Gestion de l'affichage du menu
+  const router = useRouter();
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [user, setUser] = useState(null); // État pour suivre l'utilisateur connecté
+  const auth = getAuth();
 
-  // Fonction pour fermer le menu
+  // Écouteur d'état de l'utilisateur
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser); // Met à jour l'état avec les infos de l'utilisateur
+    });
+
+    return () => unsubscribe(); // Nettoyage de l'écouteur
+  }, []);
+
   const closeMenu = () => {
     setIsMenuVisible(false);
   };
 
-  // Fonction pour ouvrir le menu
   const openMenu = () => {
     setIsMenuVisible(true);
   };
 
-  // Fonction pour rediriger vers la page de Booking
-  const goToBooking = () => {
-    router.push('/Booking');
+  const navigateToHome = () => {
+    router.push('/');
+  };
+
+  // Navigation conditionnelle : Login ou Profil
+  const navigateToLoginOrProfile = () => {
+    if (user) {
+      router.push('/Profile'); // Si l'utilisateur est connecté, va vers le profil
+    } else {
+      router.push('/LoginScreen'); // Sinon, va vers la page de connexion
+    }
   };
 
   // Contenu du menu
@@ -49,8 +67,12 @@ const Header = () => {
       </TouchableOpacity>
 
       {/* Icône Profil (à droite) */}
-      <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/LoginScreen')}>
-        <Ionicons name="person-circle-outline" size={28} color="#FEDB9B" />
+      <TouchableOpacity style={styles.iconButton} onPress={navigateToLoginOrProfile}>
+        <Ionicons 
+          name={user ? "person-circle" : "person-circle-outline"} 
+          size={28} 
+          color="#FEDB9B" 
+        />
       </TouchableOpacity>
 
       {/* Menu Modal */}
@@ -94,17 +116,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#B53302', // Fond rouge intense
+    backgroundColor: '#B53302',
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderBottomWidth: 2,
-    borderBottomColor: '#E97D01', // Bordure orange vif
+    borderBottomColor: '#E97D01',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    marginTop: 20,
+    marginTop: 40,
   },
 
   iconButton: {
@@ -114,16 +136,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FECA64', // Texte jaune doré
+    color: '#FECA64',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Ombre de fond pour le menu
-    justifyContent: 'flex-start', // Aligne le menu en haut de l'écran
-    alignItems: 'flex-start', // Aligne le menu à gauche de l'écran
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 
   menuContainer: {

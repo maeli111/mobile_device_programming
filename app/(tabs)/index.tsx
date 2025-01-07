@@ -1,22 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet, Image } from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import Header from '../screens/Header';
 import BottomNavigator from '../screens/BottomNavigator';
 import { useNavigation } from '@react-navigation/native';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 export default function ConnexionScreen() {
   const router = useRouter();
   const navigation = useNavigation();
+  const auth = getAuth();
 
-  // Définir un titre personnalisé et cacher le header par défaut
+  const [user, setUser] = useState(null);
+
+  // Cacher le header par défaut
   useEffect(() => {
     navigation.setOptions({
-      headerShown: false, // Cache le header automatique
+      headerShown: false,
     });
   }, [navigation]);
 
-  // Fonction pour rediriger vers la page de connexion
+  // Vérifier l'état de l'utilisateur
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe(); // Nettoyage de l'écouteur
+  }, [auth]);
+
+  // Redirige vers la page de connexion
   const goToLogin = () => {
     router.push('/LoginScreen');
   };
@@ -28,23 +41,18 @@ export default function ConnexionScreen() {
 
       {/* Contenu principal */}
       <View style={styles.content}>
-        {/* Image */}
-        <Image
-          source={require('../../assets/images/hiking.png')} // Option 1 : image locale
-          style={styles.image}
-          resizeMode="contain" // Garde les proportions de l'image
-        />
-
-        <Text style={styles.title}>Welcome to NomadEscape!</Text>
-
-        {/* Bouton pour aller à la page de connexion */}
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Sign-In"
-            onPress={goToLogin}
-            color="#B53302" // Couleur du bouton
-          />
-        </View>
+        {user ? (
+          <Text style={styles.title}>
+            Bienvenue, {user.displayName || 'Utilisateur'} !
+          </Text>
+        ) : (
+          <>
+            <Text style={styles.title}>
+              Pour profiter de toutes les fonctionnalités de l'application, veuillez vous connecter.
+            </Text>
+            <Button title="Se Connecter" onPress={goToLogin} />
+          </>
+        )}
       </View>
 
       {/* Bottom Navigator */}
@@ -56,7 +64,7 @@ export default function ConnexionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEDB9B', // Fond principal doux
+    backgroundColor: '#FEDB9B',
     justifyContent: 'space-between',
   },
   content: {
@@ -64,7 +72,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#FECA64', // Fond secondaire
+    backgroundColor: '#FECA64',
     borderRadius: 20,
     margin: 10,
     shadowColor: '#B53302',
@@ -74,19 +82,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginVertical: 20,
-    color: '#B53302', // Texte titre principal
+    marginBottom: 20,
+    color: '#B53302',
     textAlign: 'center',
   },
-  buttonContainer: {
-    width: '80%',
-    marginTop: 20,
-  },
-  image: {
-    width: '80%', // Largeur de l'image (80% de l'écran)
-    height: 200,  // Hauteur de l'image
-    marginBottom: 20, // Espacement avec le titre
+  button: {
+    marginTop: 10,
+    color: '#E97D01',
   },
 });
