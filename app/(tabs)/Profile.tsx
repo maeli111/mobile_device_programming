@@ -2,16 +2,16 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { app } from "../../firebaseConfig";
-import { getFirestore, doc, getDoc } from "firebase/firestore"; // Import Firestore
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
-import Header from '../screens/Header'; 
-import BottomTabNavigator from '../screens/BottomNavigator'; 
+import Header from '../screens/Header';
+import BottomTabNavigator from '../screens/BottomNavigator';
 
 export default function UserProfileScreen() {
     const router = useRouter();
     const auth = getAuth(app);
-    const db = getFirestore(app); // Firestore instance
+    const db = getFirestore(app);
 
     const [userInfo, setUserInfo] = useState({
         firstName: '',
@@ -34,38 +34,61 @@ export default function UserProfileScreen() {
         router.push('/Reservations');
     };
 
-    // Fetch des données utilisateur depuis Firestore
+    const feedback = () => {
+        router.push('/Feedback');
+    };
+
+    // Vérifier si l'utilisateur est connecté et récupérer les informations
     useEffect(() => {
         const user = auth.currentUser;
-        if (user) {
-            // Récupérer les données depuis Firestore en utilisant l'UID de l'utilisateur
-            const userDocRef = doc(db, "users", user.uid); // Assure-toi que la collection s'appelle 'users'
-            getDoc(userDocRef)
-                .then((docSnap) => {
-                    if (docSnap.exists()) {
-                        // Affiche tout le document pour voir sa structure
-                        const userData = docSnap.data();
-                        console.log("Données utilisateur récupérées: ", userData); // Vérifie ce qui est récupéré
 
-                        setUserInfo({
-                            firstName: userData.firstName || "Pas de prénom", // Valeur par défaut si introuvable
-                            lastName: userData.lastName || "Pas de nom", // Valeur par défaut si introuvable
-                        });
-                    } else {
-                        console.log("Aucun document trouvé !");
-                        Alert.alert("Erreur", "Données utilisateur introuvables dans Firestore.");
+        if (!user) {
+            Alert.alert(
+                "Error",
+                "You must be logged in to access this page.",
+                [
+                    { 
+                        text: "OK", 
+                        onPress: () => router.push('/LoginScreen') 
                     }
-                    setLoading(false); // Fin du chargement
-                })
-                .catch((error) => {
-                    console.log("Erreur lors de la récupération du document:", error);
-                    Alert.alert("Erreur", "Échec du chargement des informations utilisateur");
-                    setLoading(false); // Fin du chargement en cas d'erreur
-                });
-        } else {
-            console.log("Aucun utilisateur connecté");
+                ]
+            );
+            return;
         }
-    }, []); // La dépendance vide [] permet de lancer useEffect une seule fois au montage du composant
+
+        const fetchUserInfo = async () => {
+            try {
+                // Récupérer les informations basées sur l'email
+                const q = query(
+                    collection(db, "informations"),
+                    where("email", "==", user.email)
+                );
+
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const userData = querySnapshot.docs[0].data();
+                    console.log("User data retrieved: ", userData);
+
+                    setUserInfo({
+                        firstName: userData.firstName || "No first name",
+                        lastName: userData.lastName || "No last name",
+                    });
+                } else {
+                    console.log("No documents found!");
+                    Alert.alert("Error", "User information not found in Firestore.");
+                }
+
+            } catch (error) {
+                console.error("Error retrieving document:", error);
+                Alert.alert("Error", "Failed to load user information");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserInfo();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -96,7 +119,7 @@ export default function UserProfileScreen() {
                                 <Text style={styles.cardText}>Past Appointments</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.card}>
+                            <TouchableOpacity style={styles.card} onPress={feedback}>
                                 <Text style={styles.cardText}>Feedback</Text>
                             </TouchableOpacity>
 
@@ -110,7 +133,7 @@ export default function UserProfileScreen() {
                                         style={styles.icon}
                                         name="log-out"
                                         size={24}
-                                        color="#FF6347" // Tomato red
+                                        color="#FF6347"
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -128,7 +151,7 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FEDB9B', // Couleur de fond
+        backgroundColor: '#FEDB9B',
     },
     scrollContainer: {
         flex: 1,
@@ -140,7 +163,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginHorizontal: 24,
         marginBottom: 24,
-        backgroundColor: "#FECA64", // Couleur jaune clair
+        backgroundColor: "#FECA64",
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
@@ -159,17 +182,15 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        fontFamily: "Mulish-Medium",
         fontWeight: '600',
-        color: "#B53302", // Couleur rouge foncé pour le titre
+        color: "#B53302",
     },
     header_text: {
         marginHorizontal: 24,
         marginVertical: 24,
         fontSize: 32,
-        fontFamily: "Mulish-Medium",
         fontWeight: '700',
-        color: "#B53302", // Couleur rouge foncé pour l'en-tête
+        color: "#B53302",
         textAlign: 'center',
     },
     logout_container: {
@@ -184,8 +205,7 @@ const styles = StyleSheet.create({
     logout_text: {
         padding: 8,
         fontSize: 18,
-        fontFamily: "Mulish-SemiBold",
-        color: "#E97D01", // Orange pour le texte de déconnexion
+        color: "#E97D01",
     },
     icon: {
         padding: 6,
@@ -193,7 +213,7 @@ const styles = StyleSheet.create({
     },
     card: {
         padding: 18,
-        backgroundColor: "#FECA64", // Couleur jaune clair pour les cartes
+        backgroundColor: "#FECA64",
         borderRadius: 10,
         marginHorizontal: 24,
         marginBottom: 15,
@@ -205,7 +225,6 @@ const styles = StyleSheet.create({
     },
     cardText: {
         fontSize: 18,
-        fontFamily: "Mulish-Regular",
-        color: "#FCAC23", // Jaune-orange pour le texte des cartes
+        color: "#FCAC23",
     }
 });

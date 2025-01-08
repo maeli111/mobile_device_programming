@@ -1,29 +1,54 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, SafeAreaView, ScrollView } from 'react-native';
-import Header from '../screens/Header'; // Assurez-vous du bon chemin
-import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous du bon chemin
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Image, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { getAuth } from 'firebase/auth';
+import { app } from '../../firebaseConfig'; // Assurez-vous que le chemin est correct
+import { useRouter } from 'expo-router'; // Pour la navigation
+import Header from '../screens/Header';
+import BottomTabNavigator from '../screens/BottomNavigator';
 
 const UnderConstructionPage = () => {
+  const auth = getAuth(app);
+  const router = useRouter();
+
+  // Vérifier si l'utilisateur est connecté
+  useEffect(() => {
+    const user = auth.currentUser;
+
+    if (!user) {
+      // Si aucun utilisateur n'est connecté
+      Alert.alert(
+        "Error",
+        "You must be logged in to access this page.",
+        [
+          { 
+            text: "OK", 
+            onPress: () => router.push('/LoginScreen') 
+          }
+        ]
+      );
+    }
+  }, []);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <Header />
 
-      {/* Contenu principal */}
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.mainContent}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/150' }} // Remplacez l'URL par l'image de votre choix
-            style={styles.image}
-          />
-          <Text style={styles.title}>Page en construction</Text>
-          <Text style={styles.message}>Cette page est actuellement en cours de construction. Revenez plus tard !</Text>
-        </View>
-      </ScrollView>
-
+      <SafeAreaView style={styles.container}>
+        {/* Contenu principal */}
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.mainContent}>
+            <Text style={styles.title}>Page in construction</Text>
+            <Text style={styles.message}>
+              This page is currently under construction. Check back later!
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      
       {/* BottomTabNavigator */}
       <BottomTabNavigator />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -65,4 +90,3 @@ const styles = StyleSheet.create({
 });
 
 export default UnderConstructionPage;
-

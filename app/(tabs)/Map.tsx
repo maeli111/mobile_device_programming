@@ -6,7 +6,7 @@ import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous du 
 
 const HomeScreen = () => {
   return (
-    <>
+    <View style={styles.container}>
       {/* Header en dehors de la vue principale */}
       <Header />
 
@@ -162,7 +162,7 @@ const HomeScreen = () => {
 
       {/* BottomTabNavigator en dehors de la vue principale */}
       <BottomTabNavigator />
-    </>
+    </View>
   );
 };
 
@@ -172,6 +172,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FEDB9B',
+    justifyContent: 'space-between',
   },
   contentContainer: {
     flexGrow: 1,

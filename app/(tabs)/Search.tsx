@@ -125,32 +125,35 @@ export default function TabTwoScreen() {
   };
 
   return (
-    <StripeProvider publishableKey={publicKey}>
-      <SafeAreaView style={styles.container}>
-        {/* Ajouter le Header */}
-        <Header />
+    <View style={styles.container}>
+      <StripeProvider publishableKey={publicKey}>
+        <SafeAreaView style={styles.container}>
+          {/* Ajouter le Header */}
+          <Header />
 
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.headingContainer}>
-            <Text style={styles.title}>All our activities</Text>
-            
-            <Pressable onPress={async () => await displayEditPaymentInfo()}>
-              <Text style={{ color: '#FCAC23' }}>Edit Payment Info</Text>
-            </Pressable>
-          </View>
+          <ScrollView contentContainerStyle={styles.scrollViewContent}>
+            <View style={styles.headingContainer}>
+              <Text style={styles.title}>All our activities</Text>
+              
+              <Pressable onPress={async () => await displayEditPaymentInfo()}>
+                <Text style={{ color: '#FCAC23' }}>Edit Payment Info</Text>
+              </Pressable>
+            </View>
 
-          <CustomerSheetBeta.CustomerSheet visible={showEditPayment} onResult={() => setShowEditPayment(false)} customerId={customerID} customerEphemeralKeySecret={ephemeralKey} />
+            <CustomerSheetBeta.CustomerSheet visible={showEditPayment} onResult={() => setShowEditPayment(false)} customerId={customerID} customerEphemeralKeySecret={ephemeralKey} />
 
-          {/* Contenu des activités */}
-          <QueryClientProvider client={queryClient}>
-            <ActivityList />
-          </QueryClientProvider>
-        </ScrollView>
+            {/* Contenu des activités */}
+            <QueryClientProvider client={queryClient}>
+              <ActivityList />
+            </QueryClientProvider>
+          </ScrollView>
 
-        {/* Ajouter le BottomTabNavigator */}
-        <BottomTabNavigator />
-      </SafeAreaView>
-    </StripeProvider>
+          {/* Ajouter le BottomTabNavigator */}
+          <BottomTabNavigator />
+        </SafeAreaView>
+      </StripeProvider>
+    </View>
+    
   );
 }
 
@@ -158,7 +161,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FEDB9B', // Utilisation de la couleur beige clair comme fond principal
-    paddingHorizontal: 20, // Ajouter un peu d'espace de chaque côté
   },
   activitiesContainer: {
     marginBottom: 30,
@@ -169,7 +171,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 3, // Pour les appareils Android
   },
   headingContainer: {
     gap: 3,

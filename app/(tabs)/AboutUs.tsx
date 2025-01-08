@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import Header from '../screens/Header'; // Import Header
 import BottomNavigator from '../screens/BottomNavigator'; // Import BottomNavigator
 
 // About Us Component
 const AboutUs = () => {
+  const [showContactInfo, setShowContactInfo] = useState(false);
+
+  const toggleContactInfo = () => {
+    setShowContactInfo(!showContactInfo); // Toggle visibility of contact info
+  };
+
   return (
-    <>
+    <View style={styles.container}>
       {/* Header Section */}
       <Header />
 
@@ -66,19 +72,32 @@ const AboutUs = () => {
           <Text style={styles.text}>
             For more information or to book an activity, feel free to get in touch with us:
           </Text>
-          <TouchableOpacity style={styles.contactButton}>
+          <TouchableOpacity style={styles.contactButton} onPress={toggleContactInfo}>
             <Text style={styles.contactText}>Contact Us</Text>
           </TouchableOpacity>
+
+          {/* Contact Info (Email & Phone) */}
+          {showContactInfo && (
+            <View style={styles.contactInfo}>
+              <Text style={styles.contactDetails}>📧 Email: support@nomadescape.com</Text>
+              <Text style={styles.contactDetails}>📞 Phone: +356 123 456 789</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
       {/* Bottom Navigator */}
       <BottomNavigator />
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FEDB9B',
+    justifyContent: 'space-between',
+  },
   scrollContainer: {
     flexGrow: 1,
     padding: 20,
@@ -151,6 +170,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     fontWeight: 'bold',
+  },
+  contactInfo: {
+    marginTop: 20,
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 1,
+    backgroundColor: '#FEDB9B', 
+    borderColor: '#B53302',
+  },
+  contactDetails: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 
