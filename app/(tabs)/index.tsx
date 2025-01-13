@@ -93,11 +93,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEDB9B',
   },
   scrollContent: {
-    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   content: {
+
+    marginTop : 50,
+    
     padding: 20,
     backgroundColor: '#FECA64',
     borderRadius: 20,

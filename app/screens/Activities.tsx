@@ -8,20 +8,21 @@ import { initializeApp } from 'firebase/app';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { CustomerSheetBeta, initPaymentSheet, presentPaymentSheet, StripeProvider } from '@stripe/stripe-react-native';
 import { publicKey } from '@/constants/StripePublicKey';
+import Icon from 'react-native-vector-icons/FontAwesome'; // Importation de l'icône
 
 function ActivityList() {
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const db = getFirestore(app); 
 
-  // Modifier la fonction pour récupérer les activités
+  const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({}); // État pour les favoris
+  const [message, setMessage] = useState<string | null>(null); // État pour le message
+
   const getActivities = async () => {
-    const res = await getDocs(collection(db, "activities")); // Modifier ici pour récupérer les activités
-
+    const res = await getDocs(collection(db, "activities"));
     let activities: DocumentData[] = [];
     res.forEach(document => {
       activities.push({ id: document.id, data: document.data() });
     });
-
     return activities;
   };
 
@@ -82,11 +83,21 @@ function ActivityList() {
   const [isPaymentActive, setPaymentActive] = useState(false);
   const [paymentActiveActivityID, setPaymentID] = useState<string | null>(null);
 
+  const toggleFavorite = (activityId: string) => {
+    setFavorites(prev => ({
+      ...prev,
+      [activityId]: !prev[activityId],
+    }));
+    setMessage("L'activité a bien été ajoutée aux favoris");
+    setTimeout(() => setMessage(null), 2000); // Masquer le message après 2 secondes
+  };
+
   const { data, error, isLoading, refetch, isPending } = useQuery({ queryKey: ['activities'], queryFn: getActivities });
 
   return (
     <View style={styles.activitiesContainer}>
       {isPending && isLoading && <ActivityIndicator />}
+      {message && <ThemedText type="info">{message}</ThemedText>} {/* Affichage du message */}
       {!isPending && (
         <FlatList
           refreshing={isLoading}
@@ -94,14 +105,19 @@ function ActivityList() {
           data={data}
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
-            <Activity
-              activePayment={paymentActiveActivityID}
-              activityID={item.id}
-              onPress={async () => await openPaymentSheet(item.data.price, item.id)}
-              activityName={item.data.name}
-              activityPrice={item.data.price / 100}
-              activityDescription={item.data.description}
-            />
+            <View>
+              <Activity
+                activePayment={paymentActiveActivityID}
+                activityID={item.id}
+                onPress={async () => await openPaymentSheet(item.data.price, item.id)}
+                activityName={item.data.name}
+                activityPrice={item.data.price / 100}
+                activityDescription={item.data.description}
+              />
+              <Pressable onPress={() => toggleFavorite(item.id)}>
+                <Icon name={favorites[item.id] ? "heart" : "heart-o"} size={20} color="red" />
+              </Pressable>
+            </View>
           )}
         />
       )}
@@ -157,6 +173,7 @@ const styles = StyleSheet.create({
   },
   activitiesContainer: {
     marginTop: 30,
+    backgroundColor: 'yellow',
     marginBottom: 30
   },
   headingContainer: {

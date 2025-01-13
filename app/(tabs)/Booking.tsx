@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/firebaseConfig'; // ✅ Direct import of db from firebaseConfig
@@ -34,9 +34,10 @@ const AppointmentScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header component */}
+    
+    <View style={styles.container}>
       <Header />
+      {/* Header component */}
 
       {/* Main content */}
       <View style={styles.content}>
@@ -77,7 +78,7 @@ const AppointmentScreen = () => {
 
       {/* Bottom Navigation component */}
       <BottomTabNavigator />
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -31,6 +31,10 @@ const Header = () => {
     router.push('/');
   };
 
+  const goToBooking = () => {
+    router.push('/Booking');
+  };
+
   // Navigation conditionnelle : Login ou Profil
   const navigateToLoginOrProfile = () => {
     if (user) {
@@ -50,8 +54,8 @@ const Header = () => {
     { id: '6', title: 'Feedback', action: () => router.push('/Feedback') },
     { id: '7', title: 'My profile', action: () => router.push('/Profile') },
     { id: '8', title: 'About Us', action: () => router.push('/AboutUs') },
-    //{ id: '9', title: 'Modify activities', action: () => router.push('/ModifyActivities') },
-    // { id: '10', title: 'Booking', action: goToBooking }, // Ajout de Booking
+    { id: '9', title: 'Modify activities', action: () => router.push('/ModifyActivities') },
+    { id: '10', title: 'Booking', action: goToBooking }, // Ajout de Booking
   ];
 
   return (
@@ -126,7 +130,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    marginTop: 40,
+    top : 50,
+    zIndex : 10,
+    marginBottom : 20,
+    
   },
 
   iconButton: {

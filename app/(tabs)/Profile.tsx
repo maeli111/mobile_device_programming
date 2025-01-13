@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { app } from "../../firebaseConfig";
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDoc, getDocs, doc } from "firebase/firestore";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
 import Header from '../screens/Header';
 import BottomTabNavigator from '../screens/BottomNavigator';
+import { ThemedText } from "@/components/ThemedText"; // Assurez-vous d'avoir ce composant si nécessaire
 
 export default function UserProfileScreen() {
     const router = useRouter();
@@ -19,6 +20,8 @@ export default function UserProfileScreen() {
     });
 
     const [loading, setLoading] = useState(true);
+    const [favorites, setFavorites] = useState([]);  // Pour stocker les activités favorites
+    const [showFavorites, setShowFavorites] = useState(false); // Pour afficher ou masquer la liste des favoris
 
     // Fonction de déconnexion
     function handleSignOut() {
@@ -60,7 +63,7 @@ export default function UserProfileScreen() {
             try {
                 // Récupérer les informations basées sur l'email
                 const q = query(
-                    collection(db, "informations"),
+                    collection(db, "users"),
                     where("email", "==", user.email)
                 );
 
@@ -90,6 +93,42 @@ export default function UserProfileScreen() {
         fetchUserInfo();
     }, []);
 
+    // Fonction pour récupérer les activités favorites de l'utilisateur
+    const fetchFavorites = async (userEmail) => {
+        try {
+            const docRef = doc(db, "favorites", userEmail);  // Collection favorites
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const favoritesData = docSnap.data();
+                const favoriteActivities = Object.keys(favoritesData).map((activityID) => ({
+                    activityID,
+                    ...favoritesData[activityID], // Ajouter les données spécifiques de l'activité
+                }));
+                setFavorites(favoriteActivities); // Mettez à jour l'état des favoris
+            } else {
+                console.log("No favorites found");
+                setFavorites([]);
+            }
+        } catch (error) {
+            console.error("Error fetching favorites:", error);
+            Alert.alert("Error", "Failed to load favorites.");
+        }
+    };
+
+    // Fonction pour gérer l'affichage/masquage des favoris
+    const handleShowFavorites = () => {
+        const user = auth.currentUser;
+        if (user) {
+            setShowFavorites(!showFavorites);
+            if (!showFavorites) {
+                fetchFavorites(user.email); // Charger les favoris lorsque l'utilisateur les affiche
+            }
+        } else {
+            Alert.alert("Error", "You need to be logged in to see your favorites.");
+        }
+    };
+
     return (
         <View style={styles.container}>
             {/* Header en dehors du ScrollView */}
@@ -114,6 +153,24 @@ export default function UserProfileScreen() {
                             <TouchableOpacity style={styles.card}>
                                 <Text style={styles.cardText}>Account Information</Text>
                             </TouchableOpacity>
+                            
+                            <TouchableOpacity style={styles.card} onPress={handleShowFavorites}>
+                                <Text style={styles.cardText}>My Favorites</Text>
+                            </TouchableOpacity>
+
+                            {showFavorites && (
+                                <View style={styles.favoritesContainer}>
+                                    {favorites.length > 0 ? (
+                                        favorites.map((favorite) => (
+                                            <View key={favorite.activityID} style={styles.favoriteItem}>
+                                                <ThemedText style={styles.favoriteText}>{favorite.activityID}</ThemedText>
+                                            </View>
+                                        ))
+                                    ) : (
+                                        <Text style={styles.cardText}>No favorites found</Text>
+                                    )}
+                                </View>
+                            )}
 
                             <TouchableOpacity style={styles.card} onPress={reservations}>
                                 <Text style={styles.cardText}>Past Appointments</Text>
@@ -226,5 +283,19 @@ const styles = StyleSheet.create({
     cardText: {
         fontSize: 18,
         color: "#FCAC23",
+    },
+    favoritesContainer: {
+        marginTop: 20,
+        paddingHorizontal: 24,
+    },
+    favoriteItem: {
+        padding: 10,
+        backgroundColor: "#FECA64",
+        marginBottom: 10,
+        borderRadius: 8,
+    },
+    favoriteText: {
+        fontSize: 16,
+        color: "#B53302",
     }
 });

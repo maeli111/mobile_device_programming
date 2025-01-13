@@ -65,7 +65,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    marginTop: 20,
+    position : 'absolute',
+    bottom : 0,
+   
+    
+  
   },
   button: {
     flex: 1,

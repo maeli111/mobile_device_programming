@@ -1,7 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, View, useColorScheme, Pressable, ViewProps, PressableProps, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, StyleSheet, View, Text, useColorScheme, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc, deleteField } from "firebase/firestore"; 
+
+// Firestore instance
+const db = getFirestore();
 
 export type ActivityProps = PressableProps & {
   activityTitle: string;
@@ -22,6 +28,88 @@ export default function Activity({
 }: ActivityProps) {
   const theme = useColorScheme() ?? 'light';
 
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const auth = getAuth();
+
+  // Vérifie si l'utilisateur est connecté et charge les favoris
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setUser(currentUser);
+      checkIfFavorite(currentUser.email);
+    }
+  }, [auth]);
+
+  // Fonction pour vérifier si l'activité est déjà dans les favoris de l'utilisateur
+  const checkIfFavorite = async (userEmail) => {
+    try {
+      const docRef = doc(db, "favorites", userEmail);  // Collection favorites
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const favorites = docSnap.data();
+        if (favorites[activityTitle]) {
+          setIsFavorite(true); // Si le titre de l'activité est dans les favoris, on met à jour l'état
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification des favoris:", error);
+      Alert.alert("Erreur", "Une erreur s'est produite lors de la vérification des favoris.");
+    }
+  };
+
+  // Fonction pour ajouter l'activité aux favoris dans Firestore
+  const addToFavorites = async (userEmail, activityTitle) => {
+    try {
+      const docRef = doc(db, "favorites", userEmail);  // Collection favorites
+      await setDoc(docRef, {
+        [activityTitle]: true // Utilisez le titre de l'activité comme clé et mettez sa valeur à "true" pour indiquer qu'elle est en favori
+      }, { merge: true });
+
+      Alert.alert("Favori ajouté", "L'activité a été ajoutée à vos favoris.");
+    } catch (error) {
+      console.error("Erreur lors de l'ajout aux favoris:", error);
+      Alert.alert("Erreur", "Une erreur s'est produite lors de l'ajout aux favoris.");
+    }
+  };
+
+  // Fonction pour retirer l'activité des favoris dans Firestore
+  const removeFromFavorites = async (userEmail, activityTitle) => {
+    try {
+      const docRef = doc(db, "favorites", userEmail);
+      await setDoc(docRef, {
+        [activityTitle]: deleteField() // Supprime le titre de l'activité de la collection
+      }, { merge: true });
+
+      Alert.alert("Favori retiré", "L'activité a été retirée de vos favoris.");
+    } catch (error) {
+      console.error("Erreur lors du retrait du favori:", error);
+      Alert.alert("Erreur", "Une erreur s'est produite lors du retrait du favori.");
+    }
+  };
+
+  const handleFavoritePress = () => {
+    if (!user) {
+      Alert.alert(
+        "Connexion requise",
+        "Vous devez être connecté pour ajouter des favoris."
+      );
+      return;
+    }
+
+    setIsFavorite(!isFavorite);
+
+    // Si l'activité n'est pas encore un favori, on l'ajoute
+    if (!isFavorite) {
+      addToFavorites(user.email, activityTitle); // Utiliser le titre de l'activité
+    } else {
+      // Si l'activité est déjà un favori, on la retire
+      removeFromFavorites(user.email, activityTitle); // Utiliser le titre de l'activité
+    }
+  };
+
   return (
     <Pressable
       style={{
@@ -30,6 +118,14 @@ export default function Activity({
       }}
       onPress={onPress}
     >
+      <TouchableOpacity style={styles.Coeur} onPress={handleFavoritePress}>
+        <Icon
+          name={isFavorite ? "heart" : "heart-o"}
+          size={24}
+          color={isFavorite ? "#FF0000" : "#000"}
+        />
+      </TouchableOpacity>
+
       <View style={styles.activityDetails}>
         <ThemedText type="titleSmall" style={styles.activityTitle}>
           {activityTitle}
@@ -69,7 +165,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: 25,
     paddingLeft: 20,
     paddingRight: 15,
     borderRadius: 10,
@@ -106,5 +202,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FECA64',
     fontWeight: 'bold',
+  },
+  Coeur: {
+    right: 10,
+    top: 5,
+    position: 'absolute',
   },
 });
