@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; // Assure-toi d'avoir installé @expo/vector-icons
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; // Assurez-vous d'avoir installé @expo/vector-icons
 import { useRouter } from 'expo-router';  // Utilisation de router pour la navigation
 
 const BottomNavigator = () => {
@@ -21,11 +21,10 @@ const BottomNavigator = () => {
     router.push('/Search');
   };
   
-  // Fonction pour naviguer vers messages
-  const navigateToMessages = () => {
-    router.push('/Messages');
+  // Fonction pour naviguer vers booking activities
+  const navigateToBooking = () => {
+    router.push('/Booking'); // Renommé pour plus de clarté
   };
-  
 
   return (
     <View style={styles.bottomContainer}>
@@ -38,12 +37,12 @@ const BottomNavigator = () => {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={navigateToSearch} style={styles.button}>
-          <FontAwesome5 name="search" size={24} color="#FECA64" />
-     </TouchableOpacity>
+        <FontAwesome5 name="search" size={24} color="#FECA64" />
+      </TouchableOpacity>
 
-     <TouchableOpacity onPress={navigateToMessages} style={styles.button}>
-        <Ionicons name="chatbubbles" size={24} color="#FECA64" />
-     </TouchableOpacity>
+      <TouchableOpacity onPress={navigateToBooking} style={styles.button}>
+        <Ionicons name="calendar" size={24} color="#FECA64" /> 
+      </TouchableOpacity>
     </View>
   );
 };
@@ -67,21 +66,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     position : 'absolute',
     bottom : 0,
-   
-    
-  
   },
   button: {
     flex: 1,
     justifyContent: 'center',  // Centrer horizontalement
     alignItems: 'center',      // Centrer verticalement
-    padding: 10,               // Un peu de padding autour du bouton pour la taille
+    padding: 10,               // Un peu de padding autour du bouton pour la taille
   },
-
-  closeButton: {
-    paddingVertical: 15,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-
 });

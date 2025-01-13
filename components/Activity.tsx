@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { TouchableOpacity, StyleSheet, View, Text, useColorScheme, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { TouchableOpacity, StyleSheet, View, Text, TextInput, FlatList, useColorScheme, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -30,6 +30,11 @@ export default function Activity({
 
   const [isFavorite, setIsFavorite] = useState(false);
   const [user, setUser] = useState(null);
+  const [rating, setRating] = useState(null);
+  const [numberOfReviews, setNumberOfReviews] = useState(0);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [searchText, setSearchText] = useState("");
+
 
   const auth = getAuth();
 
@@ -40,7 +45,23 @@ export default function Activity({
       setUser(currentUser);
       checkIfFavorite(currentUser.email);
     }
-  }, [auth]);
+    // Charger la note et le nombre d'avis de l'activité
+    const fetchActivityDetails = async () => {
+      try {
+        const docRef = doc(db, "activities", activityID);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setRating(data.rating || 0); // Utiliser 0 si aucune note n'est donnée
+          setNumberOfReviews(data.numberOfReviews || 0); // Utiliser 0 si aucun avis
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des détails de l'activité:", error);
+      }
+    };
+
+    fetchActivityDetails();
+  }, [auth, activityID]);
 
   // Fonction pour vérifier si l'activité est déjà dans les favoris de l'utilisateur
   const checkIfFavorite = async (userEmail) => {
@@ -118,6 +139,7 @@ export default function Activity({
       }}
       onPress={onPress}
     >
+      
       <TouchableOpacity style={styles.Coeur} onPress={handleFavoritePress}>
         <Icon
           name={isFavorite ? "heart" : "heart-o"}
@@ -139,6 +161,15 @@ export default function Activity({
         >
           {activityDescription}
         </ThemedText>
+
+        {/* Afficher la note et le nombre d'avis */}
+        {rating !== null && numberOfReviews > 0 && (
+          <View style={styles.ratingContainer}>
+            <Text style={styles.ratingText}>
+              {rating} ★ ({numberOfReviews} avis)
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.activityRHS}>
@@ -176,6 +207,21 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginLeft: 10,
+  },
   activityDetails: {
     flex: 1, // Permet de prendre l'espace disponible
     marginRight: 10, // Crée un espacement avec la section de droite
@@ -200,6 +246,14 @@ const styles = StyleSheet.create({
   },
   activityPrice: {
     fontSize: 16,
+    color: '#FECA64',
+    fontWeight: 'bold',
+  },
+  ratingContainer: {
+    marginTop: 5,
+  },
+  ratingText: {
+    fontSize: 14,
     color: '#FECA64',
     fontWeight: 'bold',
   },

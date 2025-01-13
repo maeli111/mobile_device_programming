@@ -98,7 +98,7 @@ const UnderConstructionPage = () => {
                       <Text style={styles.appointmentText}>
                         {appointmentDate.toLocaleString()}
                       </Text>
-                      <Text style={styles.appointmentText}>Location: {appointment.location}</Text>
+                      <Text style={styles.appointmentText}>Location: {activity ? activity.location : 'No location'}</Text>
                       <Text style={styles.appointmentText}>Activity: {activity ? activity.title : 'Unknown'}</Text>
                       <Text style={styles.appointmentText}>Description: {activity ? activity.description : 'No description available'}</Text>
                       <Text style={styles.appointmentText}>Price: {activity ? `$${activity.price}` : 'N/A'}</Text>

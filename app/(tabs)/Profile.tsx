@@ -17,11 +17,14 @@ export default function UserProfileScreen() {
     const [userInfo, setUserInfo] = useState({
         firstName: '',
         lastName: '',
+        email: "",
+        createdAt: "",
     });
 
     const [loading, setLoading] = useState(true);
     const [favorites, setFavorites] = useState([]);  // Pour stocker les activités favorites
     const [showFavorites, setShowFavorites] = useState(false); // Pour afficher ou masquer la liste des favoris
+    const [showAccountInfo, setShowAccountInfo] = useState(false);
 
     // Fonction de déconnexion
     function handleSignOut() {
@@ -76,7 +79,12 @@ export default function UserProfileScreen() {
                     setUserInfo({
                         firstName: userData.firstName || "No first name",
                         lastName: userData.lastName || "No last name",
+                        email: userData.email || "No email",
+                        createdAt: userData.createdAt 
+                            ? new Date(userData.createdAt.seconds * 1000).toLocaleDateString() // Convertir Timestamp
+                            : "No date",
                     });
+                    
                 } else {
                     console.log("No documents found!");
                     Alert.alert("Error", "User information not found in Firestore.");
@@ -129,6 +137,11 @@ export default function UserProfileScreen() {
         }
     };
 
+    const handleShowAccountInfo = () => {
+        setShowAccountInfo(!showAccountInfo);
+      };
+    
+
     return (
         <View style={styles.container}>
             {/* Header en dehors du ScrollView */}
@@ -150,10 +163,19 @@ export default function UserProfileScreen() {
                                 </View>
                             </View>
 
-                            <TouchableOpacity style={styles.card}>
+                            <TouchableOpacity style={styles.card} onPress={handleShowAccountInfo}>
                                 <Text style={styles.cardText}>Account Information</Text>
                             </TouchableOpacity>
-                            
+
+                            {showAccountInfo && (
+                                <View style={styles.accountInfoContainer}>
+                                <Text style={styles.infoText}>First Name: {userInfo.firstName}</Text>
+                                <Text style={styles.infoText}>Last Name: {userInfo.lastName}</Text>
+                                <Text style={styles.infoText}>Email: {userInfo.email}</Text>
+                                <Text style={styles.infoText}>Account Created: {userInfo.createdAt}</Text>
+                                </View>
+                            )}
+
                             <TouchableOpacity style={styles.card} onPress={handleShowFavorites}>
                                 <Text style={styles.cardText}>My Favorites</Text>
                             </TouchableOpacity>
@@ -297,5 +319,21 @@ const styles = StyleSheet.create({
     favoriteText: {
         fontSize: 16,
         color: "#B53302",
-    }
+    },
+    accountInfoContainer: {
+      marginTop: 20,
+      marginHorizontal: 24,
+      padding: 16,
+      backgroundColor: "#FECA64",
+      borderRadius: 8,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+    },
+    infoText: {
+      fontSize: 16,
+      color: "#B53302",
+      marginBottom: 8,
+    },
 });
