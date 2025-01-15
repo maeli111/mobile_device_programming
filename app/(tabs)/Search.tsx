@@ -1,25 +1,94 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, TextInput, FlatList, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Ensure you have @expo/vector-icons installed
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { app } from '../../firebaseConfig'; // Ensure the path is correct
+import { View, StyleSheet, SafeAreaView, TextInput, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { getFirestore, collection, getDocs, doc, setDoc, getDoc, deleteField } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { app } from '../../firebaseConfig'; 
 import Header from '../screens/Header';
 import BottomTabNavigator from '../screens/BottomNavigator';
 
-const DateTimeSelectionPage = () => {
+const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [allActivities, setAllActivities] = useState([]);
   const [filteredActivities, setFilteredActivities] = useState([]);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [favorites, setFavorites] = useState({});
+
+  const auth = getAuth();
+  const db = getFirestore(app);
 
   // Fetch activities from Firestore
   const fetchActivities = async () => {
-    const db = getFirestore(app);
     const activitiesCollection = collection(db, 'activities');
     const snapshot = await getDocs(activitiesCollection);
     const activitiesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     setAllActivities(activitiesList);
-    setFilteredActivities(activitiesList); // Initialize with all activities
+    setFilteredActivities(activitiesList); 
+  };
+
+  // Fetch user's favorite activities
+  const fetchFavorites = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const userEmail = currentUser.email;
+    const docRef = doc(db, 'favorites', userEmail);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      setFavorites(docSnap.data());
+    }
+  };
+
+  // Add an activity to favorites using the title
+  const addToFavorites = async (activity) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      Alert.alert("Connexion requise", "Vous devez être connecté pour ajouter des favoris.");
+      return;
+    }
+
+    const userEmail = currentUser.email;
+    const docRef = doc(db, 'favorites', userEmail);
+
+    // Utiliser le titre de l'activité comme clé dans les favoris
+    await setDoc(docRef, { [activity.title]: activity.title }, { merge: true });
+
+    setFavorites((prev) => ({ ...prev, [activity.title]: activity.title }));
+    Alert.alert("Favori ajouté", "L'activité a été ajoutée à vos favoris.");
+  };
+
+  // Remove an activity from favorites using the title
+  const removeFromFavorites = async (activity) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      Alert.alert("Connexion requise", "Vous devez être connecté pour retirer des favoris.");
+      return;
+    }
+
+    const userEmail = currentUser.email;
+    const docRef = doc(db, 'favorites', userEmail);
+    
+    // Utiliser le titre de l'activité pour la retirer des favoris
+    await setDoc(docRef, { [activity.title]: deleteField() }, { merge: true });
+
+    setFavorites((prev) => {
+      const updatedFavorites = { ...prev };
+      delete updatedFavorites[activity.title];  // Supprimer par titre
+      return updatedFavorites;
+    });
+
+    Alert.alert("Favori retiré", "L'activité a été retirée de vos favoris.");
+  };
+
+  // Toggle favorite status
+  const toggleFavorite = (activity) => {
+    if (favorites[activity.title]) {
+      removeFromFavorites(activity);
+    } else {
+      addToFavorites(activity);
+    }
   };
 
   // Filter activities based on search query
@@ -44,12 +113,13 @@ const DateTimeSelectionPage = () => {
 
   useEffect(() => {
     fetchActivities();
+    fetchFavorites();
   }, []);
 
   return (
     <View style={styles.container}>
       <Header />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.containerActivities}>
         <Text style={styles.title}>Search activities</Text>
 
         {/* Search Icon */}
@@ -77,10 +147,25 @@ const DateTimeSelectionPage = () => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.activityCard}>
-              <Text style={styles.activityTitle}>{item.title}</Text>
-              <Text style={styles.activityDetails}>Price: ${item.price}</Text>
+              <View style={styles.cardHeader}>
+                <Text style={styles.activityTitle}>{item.title}</Text>
+                <TouchableOpacity onPress={() => toggleFavorite(item)}>
+                  <Ionicons
+                    name={favorites[item.title] ? 'heart' : 'heart-outline'}
+                    size={24}
+                    color={favorites[item.title] ? '#FF0000' : '#000'}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.activityTitle2}>{item.description}</Text>
+              <Text style={styles.activityDetails}>Price: {item.price}€</Text>
               <Text style={styles.activityDetails}>Duration: {item.duration} mins</Text>
               <Text style={styles.activityDetails}>Location: {item.location}</Text>
+              {item.rating !== undefined && item.numberOfReviews > 0 && (
+                <Text style={styles.ratingDetails}>
+                  {item.rating} ★ ({item.numberOfReviews} reviews)
+                </Text>
+              )}
             </View>
           )}
           ListEmptyComponent={
@@ -97,6 +182,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FEDB9B', // Main background color
+  },
+  containerActivities: {
+    flex: 1,
+    backgroundColor: '#FEDB9B', 
+    marginBottom: 100,
   },
   title: {
     fontSize: 24,
@@ -138,12 +228,23 @@ const styles = StyleSheet.create({
   },
   activityTitle: {
     fontSize: 20,
+    textAlign: 'center',
     fontWeight: 'bold',
     color: '#B53302', // Title color
+  },
+  activityTitle2: {
+    fontSize: 15,
+    color: '#E97D01', // Title color
   },
   activityDetails: {
     fontSize: 14,
     color: '#333',
+    marginTop: 5,
+  },
+  ratingDetails: {
+    fontSize: 14,
+    color: '#E97D01',
+    fontWeight: 'bold',
     marginTop: 5,
   },
   emptyMessage: {
@@ -153,6 +254,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 });
 
-export default DateTimeSelectionPage;
+export default SearchPage;

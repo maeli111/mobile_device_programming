@@ -1,66 +1,41 @@
+import { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView, View, Text, Pressable, ActivityIndicator, Alert, ScrollView, RefreshControl } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import Activity from '@/components/Activity';
-import { collection, doc, setDoc, getDocs, getFirestore } from 'firebase/firestore';
+import { collection, DocumentData, getDocs, getFirestore, doc, setDoc } from 'firebase/firestore';
 import { firebaseConfig } from '../../firebaseConfig.js';
 import { initializeApp } from 'firebase/app';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { CustomerSheetBeta, initPaymentSheet, presentPaymentSheet, StripeProvider } from '@stripe/stripe-react-native';
 import { publicKey } from '@/constants/StripePublicKey';
-import { getAuth } from 'firebase/auth'; 
-import { useRouter } from 'expo-router';
-import Header from '../screens/Header'; 
+import Header from '../screens/Header';
 import BottomTabNavigator from '../screens/BottomNavigator';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import Activity from '@/components/Activity';
 
 function ActivityList() {
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
   const db = getFirestore(app);
-  const router = useRouter();
+  const auth = getAuth();
 
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [showDateTimePicker, setShowDateTimePicker] = useState(false);
-  const [currentActivityID, setCurrentActivityID] = useState(null);
-  const [currentPrice, setCurrentPrice] = useState(null);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
-
-    if (!currentUser) {
-      Alert.alert(
-        "Error",
-        "You must be logged in to access this page.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              router.push('/LoginScreen');
-            },
-          },
-        ]
-      );
-      return;
-    }
-
-    setUser(currentUser);
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser || null);
+    });
+    return () => unsubscribe();
+  }, [auth]);
 
   const getActivities = async () => {
     const res = await getDocs(collection(db, "activities"));
-    return res.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+    const activities = res.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+    return activities;
   };
 
   const createAppointment = async (user, price, activityID, status, date) => {
     try {
-      if (!user || !user.email) {
-        throw new Error("Invalid user data. Email is missing.");
-      }
-
       const appointmentRef = doc(db, "appointments", `${user.email}-${Date.now()}`);
       await setDoc(appointmentRef, {
-        user: user.displayName || "Unknown User",
+        user: user.displayName,
         email: user.email,
         price,
         activityID,
@@ -116,6 +91,10 @@ function ActivityList() {
   };
 
   const openPaymentSheet = async (price, activityID) => {
+    if (!user) {
+      Alert.alert('Error', 'You need to be logged in to make a reservation');
+      return;
+    }
     if (!isPaymentActive) {
       setPaymentActive(true);
       setPaymentID(activityID);
@@ -148,20 +127,14 @@ function ActivityList() {
       {!isPending && (
         <ScrollView
           contentContainerStyle={{ paddingBottom: 30 }}
-          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => refetch()} />}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
         >
           {data && data.map(item => (
             <Activity
               key={item.id}
               activePayment={paymentActiveActivityID}
               activityID={item.id}
-              onPress={async () => {
-                try {
-                  await openPaymentSheet(item.data.price, item.id);
-                } catch (error) {
-                  console.error('Error during activity payment:', error);
-                }
-              }}
+              onPress={() => openPaymentSheet(item.data.price, item.id)}
               activityTitle={item.data.title}
               activityPrice={item.data.price}
               activityDescription={item.data.description}
@@ -181,90 +154,76 @@ export default function TabTwoScreen() {
   const [showEditPayment, setShowEditPayment] = useState(false);
 
   const displayEditPaymentInfo = async () => {
-    try {
-      const response = await fetch(`https://getephemeralsecret-olknvoqq3q-uc.a.run.app`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const { ephemeralKey, customer } = await response.json();
-
-      setEphemeralKey(ephemeralKey);
-      setCustomerID(customer);
-      setShowEditPayment(true);
-    } catch (error) {
-      console.error('Error fetching ephemeral key and customer info:', error);
-      Alert.alert('Error', 'An error occurred while fetching payment details. Please try again.');
-    }
+    const response = await fetch('https://getephemeralsecret-olknvoqq3q-uc.a.run.app', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const { ephemeralKey, customer } = await response.json();
+    setEphemeralKey(ephemeralKey);
+    setCustomerID(customer);
+    setShowEditPayment(true);
   };
 
   return (
     <View style={styles.container}>
       <Header />
-
       <StripeProvider publishableKey={publicKey}>
-        <SafeAreaView style={styles.containerActivities}>
-
+        <SafeAreaView style={styles.container}>
           <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <View style={styles.headingContainer}>
               <Text style={styles.title}>All our activities</Text>
-
-              <Pressable onPress={async () => await displayEditPaymentInfo()}>
+              <Pressable onPress={displayEditPaymentInfo}>
                 <Text style={{ color: '#FCAC23' }}>Edit Payment Info</Text>
               </Pressable>
             </View>
 
-            <CustomerSheetBeta.CustomerSheet visible={showEditPayment} onResult={() => setShowEditPayment(false)} customerId={customerID} customerEphemeralKeySecret={ephemeralKey} />
+            <CustomerSheetBeta.CustomerSheet
+              visible={showEditPayment}
+              onResult={() => setShowEditPayment(false)}
+              customerId={customerID}
+              customerEphemeralKeySecret={ephemeralKey}
+            />
 
             <QueryClientProvider client={queryClient}>
               <ActivityList />
             </QueryClientProvider>
           </ScrollView>
 
+          <BottomTabNavigator />
         </SafeAreaView>
       </StripeProvider>
-      <BottomTabNavigator />
     </View>
   );
 }
 
-
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEDB9B', // Utilisation de la couleur beige clair comme fond principal
-  },
-  containerActivities: {
-    flex: 1,
-    backgroundColor: '#FEDB9B', 
-    marginTop: 20,
+    backgroundColor: '#FEDB9B',
   },
   activitiesContainer: {
-    marginBottom: 30,
-    backgroundColor: '#FECA64', // Utilisation de la couleur jaune pâle pour les activités
+    marginBottom: 70,
+    backgroundColor: '#FECA64',
     borderRadius: 8,
     padding: 15,
-    shadowColor: '#B53302', // Ombre rouge foncé pour ajouter un effet subtil
+    shadowColor: '#B53302',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
   },
   headingContainer: {
     gap: 3,
-    marginTop: 20,
+    marginTop: 50,
     paddingHorizontal: 20,
-    marginBottom: 20, // Espacement sous le titre
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#B53302', // Utilisation du rouge foncé pour le titre
+    color: '#B53302',
   },
   button: {
-    backgroundColor: '#FCAC23', // Utilisation du jaune doré pour les boutons
+    backgroundColor: '#FCAC23',
     borderRadius: 8,
     paddingVertical: 15,
     paddingHorizontal: 25,
@@ -274,7 +233,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 350,
     justifyContent: 'center',
-    shadowColor: '#B53302', // Ombre rouge foncé pour l'effet de profondeur
+    shadowColor: '#B53302',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -289,6 +248,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   scrollViewContent: {
-    paddingBottom: 20, // Evite que le contenu soit collé en bas
+    paddingBottom: 20,
   },
 });

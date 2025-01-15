@@ -37,6 +37,10 @@ export default function ConnexionScreen() {
   const goToSearch = () => {
     router.push('/Search');
   };
+  
+  const goToBooking = () => {
+    router.push('/Booking');
+  };
 
   return (
   <View style={styles.container}>
@@ -48,7 +52,7 @@ export default function ConnexionScreen() {
       <View style={styles.content}>
         {user ? (
           <Text style={styles.Text}>
-            Connected: Welcome, {user.displayName || 'Utilisateur'}!
+            Connected: Welcome !
           </Text>
         ) : (
           <>
@@ -73,9 +77,13 @@ export default function ConnexionScreen() {
           ))}
         </View>
 
-        {/* Rectangle Arrondi Interactif */}
         <TouchableOpacity style={styles.activityBox} onPress={goToSearch}>
           <Text style={styles.activityText}>See Activities</Text>
+          <Text style={styles.arrow}>➜</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.activityBox} onPress={goToBooking}>
+          <Text style={styles.activityText}>Book an activity</Text>
           <Text style={styles.arrow}>➜</Text>
         </TouchableOpacity>
       </View>
@@ -97,9 +105,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-
     marginTop : 50,
-    
+    marginBottom: 100,    
     padding: 20,
     backgroundColor: '#FECA64',
     borderRadius: 20,
