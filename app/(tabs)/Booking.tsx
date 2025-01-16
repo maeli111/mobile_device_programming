@@ -1,5 +1,6 @@
-import { StyleSheet, SafeAreaView, View, Text, Pressable, ActivityIndicator, Alert, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, Pressable, ActivityIndicator, Alert, ScrollView, RefreshControl, Modal, TextInput } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Activity from '@/components/Activity';
 import { collection, doc, setDoc, getDocs, getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from '../../firebaseConfig.js';
@@ -7,9 +8,9 @@ import { initializeApp } from 'firebase/app';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { CustomerSheetBeta, initPaymentSheet, presentPaymentSheet, StripeProvider } from '@stripe/stripe-react-native';
 import { publicKey } from '@/constants/StripePublicKey';
-import { getAuth } from 'firebase/auth'; 
+import { getAuth } from 'firebase/auth';
 import { useRouter } from 'expo-router';
-import Header from '../screens/Header'; 
+import Header from '../screens/Header';
 import BottomTabNavigator from '../screens/BottomNavigator';
 
 function ActivityList() {
@@ -17,13 +18,32 @@ function ActivityList() {
   const auth = getAuth(app);
   const db = getFirestore(app);
   const router = useRouter();
-
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [showDateTimePicker, setShowDateTimePicker] = useState(false);
-  const [currentActivityID, setCurrentActivityID] = useState(null);
-  const [currentPrice, setCurrentPrice] = useState(null);
   const [user, setUser] = useState(null);
+
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(true);
+  const [reservedSlots, setReservedSlots] = useState([]);
+
+  const fetchReservedSlots = async (activityID, date) => {
+    try {
+      const appointmentsRef = collection(db, "appointments");
+      const querySnapshot = await getDocs(appointmentsRef);
+      const reserved = querySnapshot.docs
+        .map(doc => doc.data())
+        .filter(
+          appointment =>
+            appointment.activityID === activityID &&
+            new Date(appointment.date.toDate()).toDateString() === date.toDateString()
+        )
+        .map(appointment => new Date(appointment.date.toDate()).getHours());
+      setReservedSlots(reserved);
+    } catch (error) {
+      console.error("Error fetching reserved slots:", error);
+    }
+  };
 
   useEffect(() => {
     const currentUser = auth.currentUser;
@@ -47,12 +67,18 @@ function ActivityList() {
     setUser(currentUser);
   }, []);
 
+  useEffect(() => {
+    if (selectedActivity) {
+      fetchReservedSlots(selectedActivity.id, selectedDate);
+    }
+  }, [selectedDate, selectedActivity]);
+
   const getActivities = async () => {
     const res = await getDocs(collection(db, "activities"));
     return res.docs.map(doc => ({ id: doc.id, data: doc.data() }));
   };
 
-  const createAppointment = async (user, price, activityID, status, date) => {
+  const createAppointment = async (user, price, activityID, status, date, timeSlot) => {
     try {
       if (!user || !user.email) {
         throw new Error("Invalid user data. Email is missing.");
@@ -65,10 +91,11 @@ function ActivityList() {
         price,
         activityID,
         status,
-        date,
+        date: new Date(date.setHours(timeSlot, 0, 0)),
         customerID: user.email,
         createdAt: new Date(),
       });
+
       console.log('Appointment created successfully!');
     } catch (error) {
       console.error('Error creating appointment: ', error);
@@ -115,30 +142,35 @@ function ActivityList() {
     }
   };
 
-  const openPaymentSheet = async (price, activityID) => {
-    if (!isPaymentActive) {
-      setPaymentActive(true);
-      setPaymentID(activityID);
-      try {
-        const isInitialized = await initializePaymentSheet(price, activityID);
-        if (!isInitialized) return;
-        const { error } = await presentPaymentSheet();
-        if (error) {
-          Alert.alert(`Error code: ${error.code}`, error.message);
-        } else {
-          Alert.alert('Success', 'Your activity is confirmed!');
-          await createAppointment(user, price, activityID, 'confirmed', new Date());
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to process payment.');
+  const openPaymentSheet = async (price, activityID, date, timeSlot) => {
+    try {
+      const isInitialized = await initializePaymentSheet(price, activityID);
+      if (!isInitialized) return;
+      const { error } = await presentPaymentSheet();
+      if (error) {
+        Alert.alert(`Error code: ${error.code}`, error.message);
+      } else {
+        Alert.alert('Success', 'Your activity is confirmed!');
+        await createAppointment(user, price, activityID, 'confirmed', date, timeSlot);
       }
-      setPaymentActive(false);
-      setPaymentID(null);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to process payment.');
     }
   };
 
-  const [isPaymentActive, setPaymentActive] = useState(false);
-  const [paymentActiveActivityID, setPaymentID] = useState(null);
+  const handleActivityPress = async (activity) => {
+    setSelectedActivity(activity);
+    setSelectedDate(new Date());
+    await fetchReservedSlots(activity.id, new Date());
+    setModalVisible(true);
+  };
+
+  const handleConfirmDate = () => {
+    setModalVisible(false);
+    if (selectedActivity) {
+      openPaymentSheet(selectedActivity.data.price, selectedActivity.id, selectedDate, selectedTimeSlot);
+    }
+  };
 
   const { data, error, isLoading, refetch, isPending } = useQuery({ queryKey: ['activities'], queryFn: getActivities });
 
@@ -153,21 +185,79 @@ function ActivityList() {
           {data && data.map(item => (
             <Activity
               key={item.id}
-              activePayment={paymentActiveActivityID}
               activityID={item.id}
-              onPress={async () => {
-                try {
-                  await openPaymentSheet(item.data.price, item.id);
-                } catch (error) {
-                  console.error('Error during activity payment:', error);
-                }
-              }}
+              onPress={() => handleActivityPress(item)}
               activityTitle={item.data.title}
               activityPrice={item.data.price}
               activityDescription={item.data.description}
             />
           ))}
         </ScrollView>
+      )}
+
+      {modalVisible && (
+        <Modal transparent={true} animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Date and Time Slot</Text>
+
+              <View style={styles.datePickerContainer}>
+                <Text style={styles.dateText}>Selected Date:</Text>
+                {showDatePicker && (
+                   <DateTimePicker
+                     mode="date"
+                     value={selectedDate}
+                     minimumDate={new Date(new Date().getTime() + 24 * 60 * 60 * 1000)} 
+                     onChange={(event, date) => {
+                       if (date) setSelectedDate(date);
+                     }}
+                     style={styles.datePicker}
+                   />
+                )}
+              </View>
+
+              <View style={styles.timeSlotsContainer}>
+                {Array.from({ length: 10 }, (_, index) => 10 + index).map(hour => {
+                  if (reservedSlots.includes(hour)) return null;
+                  return (
+                    <Pressable
+                      key={hour}
+                      style={
+                        selectedTimeSlot === hour
+                          ? styles.selectedTimeSlot
+                          : styles.timeSlot
+                      }
+                      onPress={() => {
+                        setSelectedTimeSlot(hour);
+                      }}
+                    >
+                      <Text style={styles.timeSlotText}>{hour}:00</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={[
+                    styles.confirmButton,
+                    { opacity: selectedTimeSlot === null ? 0.5 : 1 }
+                  ]}
+                  onPress={handleConfirmDate}
+                  disabled={selectedTimeSlot === null}
+                >
+                  <Text style={styles.buttonText}>Confirm</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.cancelButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       )}
     </View>
   );
@@ -182,7 +272,7 @@ export default function TabTwoScreen() {
 
   const displayEditPaymentInfo = async () => {
     try {
-      const response = await fetch(`https://getephemeralsecret-olknvoqq3q-uc.a.run.app`, {
+      const response = await fetch('https://getephemeralsecret-olknvoqq3q-uc.a.run.app', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +298,7 @@ export default function TabTwoScreen() {
 
           <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <View style={styles.headingContainer}>
-              <Text style={styles.title}>All our activities</Text>
+              <Text style={styles.title}>Book an activity</Text>
 
               <Pressable onPress={async () => await displayEditPaymentInfo()}>
                 <Text style={{ color: '#FCAC23' }}>Edit Payment Info</Text>
@@ -224,47 +314,40 @@ export default function TabTwoScreen() {
 
         </SafeAreaView>
       </StripeProvider>
+
       <BottomTabNavigator />
     </View>
   );
 }
 
 
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEDB9B', // Utilisation de la couleur beige clair comme fond principal
+    backgroundColor: '#FEDB9B',
   },
   containerActivities: {
     flex: 1,
-    backgroundColor: '#FEDB9B', 
+    backgroundColor: '#FEDB9B',
     marginTop: 20,
   },
   activitiesContainer: {
     marginBottom: 30,
-    backgroundColor: '#FECA64', // Utilisation de la couleur jaune pâle pour les activités
+    backgroundColor: '#FEDB9B', 
     borderRadius: 8,
     padding: 15,
-    shadowColor: '#B53302', // Ombre rouge foncé pour ajouter un effet subtil
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
   },
   headingContainer: {
-    gap: 3,
     marginTop: 20,
     paddingHorizontal: 20,
-    marginBottom: 20, // Espacement sous le titre
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#B53302', // Utilisation du rouge foncé pour le titre
+    color: '#B53302', 
   },
   button: {
-    backgroundColor: '#FCAC23', // Utilisation du jaune doré pour les boutons
+    backgroundColor: '#FCAC23', 
     borderRadius: 8,
     paddingVertical: 15,
     paddingHorizontal: 25,
@@ -274,7 +357,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 350,
     justifyContent: 'center',
-    shadowColor: '#B53302', // Ombre rouge foncé pour l'effet de profondeur
+    shadowColor: '#B53302', 
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -283,12 +366,62 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    marginLeft: 10,
+
   },
   icon: {
     marginRight: 10,
   },
   scrollViewContent: {
-    paddingBottom: 20, // Evite que le contenu soit collé en bas
+    paddingBottom: 20, 
+  },
+  modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+  modalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, width: '80%', alignItems: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+  dateText: { fontSize: 16, marginVertical: 10 },
+  modalButtons: { flexDirection: 'row', marginTop: 20 },
+  confirmButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    textAlign: 'center',
+  },
+  cancelButton: { backgroundColor: '#F44336', padding: 10, borderRadius: 5, marginHorizontal: 5 },
+  
+  timeSlotsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginVertical: 20,
+  },
+  timeSlot: {
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    margin: 5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  selectedTimeSlot: {
+    backgroundColor: '#4caf50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    margin: 5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#388e3c',
+  },
+  timeSlotText: {
+    color: '#333',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  datePickerContainer: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    padding: 10,
+  },
+  datePicker: {
+    flex: 1, 
   },
 });

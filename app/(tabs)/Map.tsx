@@ -1,37 +1,32 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import Header from '../screens/Header'; // Assurez-vous du bon chemin
-import BottomTabNavigator from '../screens/BottomNavigator'; // Assurez-vous du bon chemin
+import Header from '../screens/Header'; 
+import BottomTabNavigator from '../screens/BottomNavigator'; 
 
 const HomeScreen = () => {
   return (
     <View style={styles.container}>
-      {/* Header en dehors de la vue principale */}
       <Header />
-
-      {/* Contenu principal avec ScrollView */}
       
       <View style={styles.container}>
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
           
-          {/* Titre de la page */}
           <Text style={styles.title}>Explore Malta</Text>
           <Text style={styles.subtitle}>Discover the best tourist spots in Malta</Text>
           
-          {/* Section de la carte */}
           <View style={styles.mapContainer}>
             <MapView
               style={styles.map}
               initialRegion={{
-                latitude: 35.944694, // Latitude pour Malte
-                longitude: 14.381008, // Longitude pour Malte
+                latitude: 35.944694, 
+                longitude: 14.381008, 
                 latitudeDelta: 0.5,
                 longitudeDelta: 0.5,
               }}
             >
-              {/* Points d'intérêt */}
+              
               <Marker
                 coordinate={{ latitude: 35.898908, longitude: 14.514553 }}
                 title="Valetta"
@@ -100,7 +95,6 @@ const HomeScreen = () => {
             </MapView>
           </View>
 
-          {/* Liste des points d'intérêt */}
           <View style={styles.poiList}>
             <View style={styles.poiItem}>
               <Text style={styles.poiTitle}>Valetta</Text>
@@ -160,7 +154,6 @@ const HomeScreen = () => {
         
       </View>
 
-      {/* BottomTabNavigator en dehors de la vue principale */}
       <BottomTabNavigator />
     </View>
   );

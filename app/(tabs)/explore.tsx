@@ -64,7 +64,7 @@ function ProductList() {
   };
 
   const openPaymentSheet = async (price: number, productID: string) => {
-    if (!isPaymentActive) { //only one payment can go on at a time
+    if (!isPaymentActive) { 
       setPaymentActive(true);
       setPaymentID(productID);
 

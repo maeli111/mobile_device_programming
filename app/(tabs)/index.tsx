@@ -19,21 +19,20 @@ export default function ConnexionScreen() {
     require('../../assets/images/activite6.jpg'),
   ];
 
-  // Vérifier l'état de l'utilisateur
+  const logo = require('../../assets/images/logo.png'); 
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
 
-    return () => unsubscribe(); // Nettoyage de l'écouteur
+    return () => unsubscribe(); 
   }, [auth]);
 
-  // Redirige vers la page de connexion
   const goToLogin = () => {
     router.push('/LoginScreen');
   };
 
-  // Redirige vers la page de recherche
   const goToSearch = () => {
     router.push('/Search');
   };
@@ -44,15 +43,13 @@ export default function ConnexionScreen() {
 
   return (
   <View style={styles.container}>
-    {/* Header */}
     <Header />
 
-    {/* Contenu Principal */}
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={styles.content}>
         {user ? (
           <Text style={styles.Text}>
-            Connected: Welcome !
+            Connected: Welcome ! 
           </Text>
         ) : (
           <>
@@ -65,9 +62,12 @@ export default function ConnexionScreen() {
           </>
         )}
 
-        {/* Galerie d'Images en Grille */}
+        <View style={styles.logoContainer}>
+            <Image source={logo} style={styles.logo} />
+        </View>
+
         <Text style={styles.galleryTitle}>Popular Activities</Text>
-        <View style={styles.galleryGrid}>
+        <TouchableOpacity style={styles.galleryGrid} onPress={goToSearch}>
           {images.map((image, index) => (
             <Image
               key={index}
@@ -75,7 +75,7 @@ export default function ConnexionScreen() {
               style={styles.activityImage}
             />
           ))}
-        </View>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.activityBox} onPress={goToSearch}>
           <Text style={styles.activityText}>See Activities</Text>
@@ -89,7 +89,6 @@ export default function ConnexionScreen() {
       </View>
     </ScrollView>
 
-    {/* Bottom Navigator */}
     <BottomNavigator />
   </View>
 );
@@ -103,6 +102,15 @@ const styles = StyleSheet.create({
   scrollContent: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 90, 
+    height: 90,
+    resizeMode: 'contain',
   },
   content: {
     marginTop : 50,

@@ -4,8 +4,8 @@ export default function Layout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: false, // Masquer les en-têtes par défaut
-        animation: 'none',  // Désactiver toutes les animations
+        headerShown: false, 
+        animation: 'none',  
       }}
     >
       <Stack.Screen name="index" />

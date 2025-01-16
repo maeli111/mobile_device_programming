@@ -31,7 +31,6 @@ export default function Activity({
   const auth = getAuth();
   const db = getFirestore(app);
 
-  // Fonction pour vérifier si l'activité est un favori
   const checkIfFavorite = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -42,7 +41,6 @@ export default function Activity({
 
     if (docSnap.exists()) {
       const favorites = docSnap.data();
-      // Vérifier si le titre de l'activité existe dans les favoris
       if (favorites && favorites[activityTitle]) {
         setIsFavorite(true);
       } else {
@@ -51,10 +49,9 @@ export default function Activity({
     }
   };
 
-  // Vérifier les favoris lorsque l'utilisateur est connecté
   useEffect(() => {
     checkIfFavorite();
-  }, []); // Si l'email change, ajouter auth.currentUser au tableau de dépendances
+  }, []); 
 
   return (
     <Pressable
@@ -96,7 +93,6 @@ export default function Activity({
         )}
       </View>
 
-      {/* Afficher l'icône de cœur en haut à droite uniquement si c'est un favori */}
       {isFavorite && (
         <Ionicons
           name="heart"
@@ -130,11 +126,6 @@ const styles = StyleSheet.create({
   activityDetails: {
     flex: 1,
     marginRight: 10,
-  },
-  ratingDetails: {
-    fontSize: 14,
-    color: '#FECA64',
-    marginTop: 5,
   },
   activityRHS: {
     display: 'flex',

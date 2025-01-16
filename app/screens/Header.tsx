@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Assure-toi d'avoir installé @expo/vector-icons
-import { useRouter } from 'expo-router'; // Utilisation de router pour la navigation
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Import Firebase Auth
+import { Ionicons } from '@expo/vector-icons'; 
+import { useRouter } from 'expo-router'; 
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 
 const Header = () => {
   const router = useRouter();
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const [user, setUser] = useState(null); // État pour suivre l'utilisateur connecté
+  const [user, setUser] = useState(null); 
   const auth = getAuth();
 
-  // Écouteur d'état de l'utilisateur
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // Met à jour l'état avec les infos de l'utilisateur
+      setUser(currentUser); 
     });
 
-    return () => unsubscribe(); // Nettoyage de l'écouteur
+    return () => unsubscribe(); 
   }, []);
 
   const closeMenu = () => {
@@ -35,16 +34,14 @@ const Header = () => {
     router.push('/Booking');
   };
 
-  // Navigation conditionnelle : Login ou Profil
   const navigateToLoginOrProfile = () => {
     if (user) {
-      router.push('/Profile'); // Si l'utilisateur est connecté, va vers le profil
+      router.push('/Profile'); 
     } else {
-      router.push('/LoginScreen'); // Sinon, va vers la page de connexion
+      router.push('/LoginScreen'); 
     }
   };
 
-  // Contenu du menu
   const menuItems = [
     { id: '1', title: 'Home', action: () => router.push('/') },
     { id: '2', title: 'Messages', action: () => router.push('/Messages') },
@@ -55,22 +52,19 @@ const Header = () => {
     { id: '7', title: 'My profile', action: () => router.push('/Profile') },
     { id: '8', title: 'About Us', action: () => router.push('/AboutUs') },
     { id: '9', title: 'Modify activities', action: () => router.push('/ModifyActivities') },
-    { id: '10', title: 'Booking', action: goToBooking }, // Ajout de Booking
+    { id: '10', title: 'Booking', action: goToBooking }, 
   ];
 
   return (
     <View style={styles.headerContainer}>
-      {/* Icône Menu (à gauche) */}
       <TouchableOpacity style={styles.iconButton} onPress={openMenu}>
         <Ionicons name="menu" size={28} color="#FEDB9B" />
       </TouchableOpacity>
 
-      {/* Titre au centre */}
       <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/')}>
         <Text style={styles.title}>NOMADESCAPE</Text>
       </TouchableOpacity>
 
-      {/* Icône Profil (à droite) */}
       <TouchableOpacity style={styles.iconButton} onPress={navigateToLoginOrProfile}>
         <Ionicons 
           name={user ? "person-circle" : "person-circle-outline"} 
@@ -79,7 +73,6 @@ const Header = () => {
         />
       </TouchableOpacity>
 
-      {/* Menu Modal */}
       <Modal
         visible={isMenuVisible}
         transparent={true}

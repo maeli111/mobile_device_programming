@@ -17,7 +17,6 @@ const SearchPage = () => {
   const auth = getAuth();
   const db = getFirestore(app);
 
-  // Fetch activities from Firestore
   const fetchActivities = async () => {
     const activitiesCollection = collection(db, 'activities');
     const snapshot = await getDocs(activitiesCollection);
@@ -27,7 +26,6 @@ const SearchPage = () => {
     setFilteredActivities(activitiesList); 
   };
 
-  // Fetch user's favorite activities
   const fetchFavorites = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -41,7 +39,6 @@ const SearchPage = () => {
     }
   };
 
-  // Add an activity to favorites using the title
   const addToFavorites = async (activity) => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -52,14 +49,12 @@ const SearchPage = () => {
     const userEmail = currentUser.email;
     const docRef = doc(db, 'favorites', userEmail);
 
-    // Utiliser le titre de l'activité comme clé dans les favoris
     await setDoc(docRef, { [activity.title]: activity.title }, { merge: true });
 
     setFavorites((prev) => ({ ...prev, [activity.title]: activity.title }));
     Alert.alert("Favori ajouté", "L'activité a été ajoutée à vos favoris.");
   };
 
-  // Remove an activity from favorites using the title
   const removeFromFavorites = async (activity) => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -70,19 +65,17 @@ const SearchPage = () => {
     const userEmail = currentUser.email;
     const docRef = doc(db, 'favorites', userEmail);
     
-    // Utiliser le titre de l'activité pour la retirer des favoris
     await setDoc(docRef, { [activity.title]: deleteField() }, { merge: true });
 
     setFavorites((prev) => {
       const updatedFavorites = { ...prev };
-      delete updatedFavorites[activity.title];  // Supprimer par titre
+      delete updatedFavorites[activity.title];  
       return updatedFavorites;
     });
 
     Alert.alert("Favori retiré", "L'activité a été retirée de vos favoris.");
   };
 
-  // Toggle favorite status
   const toggleFavorite = (activity) => {
     if (favorites[activity.title]) {
       removeFromFavorites(activity);
@@ -91,7 +84,6 @@ const SearchPage = () => {
     }
   };
 
-  // Filter activities based on search query
   const filterActivities = (query) => {
     const normalizedQuery = query.toLowerCase();
     const filtered = allActivities.filter((activity) => {
@@ -122,7 +114,6 @@ const SearchPage = () => {
       <SafeAreaView style={styles.containerActivities}>
         <Text style={styles.title}>Search activities</Text>
 
-        {/* Search Icon */}
         <TouchableOpacity
           style={styles.searchIconContainer}
           onPress={() => setIsSearchVisible(!isSearchVisible)}
@@ -130,7 +121,6 @@ const SearchPage = () => {
           <Ionicons name="search" size={24} color="#B53302" />
         </TouchableOpacity>
 
-        {/* Search Bar */}
         {isSearchVisible && (
           <TextInput
             style={styles.searchBar}
@@ -141,7 +131,6 @@ const SearchPage = () => {
           />
         )}
 
-        {/* Activity List */}
         <FlatList
           data={filteredActivities}
           keyExtractor={(item) => item.id}
@@ -181,7 +170,7 @@ const SearchPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEDB9B', // Main background color
+    backgroundColor: '#FEDB9B', 
   },
   containerActivities: {
     flex: 1,
@@ -209,12 +198,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: 10,
     marginBottom: 15,
-    backgroundColor: '#FCAC23', // Search bar background
-    color: '#B53302', // Input text color
+    backgroundColor: '#FCAC23', 
+    color: '#B53302', 
     fontWeight: 'bold',
   },
   activityCard: {
-    backgroundColor: '#FECA64', // Card background
+    backgroundColor: '#FECA64', 
     padding: 20,
     marginVertical: 10,
     borderRadius: 12,
@@ -230,11 +219,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#B53302', // Title color
+    color: '#B53302', 
   },
   activityTitle2: {
     fontSize: 15,
-    color: '#E97D01', // Title color
+    color: '#E97D01', 
   },
   activityDetails: {
     fontSize: 14,

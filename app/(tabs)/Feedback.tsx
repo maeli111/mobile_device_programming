@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react'; 
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Alert, TouchableOpacity } from 'react-native'; 
 import { getAuth } from 'firebase/auth'; 
-import { app } from '../../firebaseConfig'; // Assurez-vous que le chemin est correct 
+import { app } from '../../firebaseConfig'; 
 import { getFirestore, collection, getDocs, query, where, getDoc, doc, updateDoc } from 'firebase/firestore'; 
-import { useRouter } from 'expo-router'; // Pour la navigation 
+import { useRouter } from 'expo-router'; 
 import Header from '../screens/Header'; 
 import BottomTabNavigator from '../screens/BottomNavigator';
 
-const UnderConstructionPage = () => { 
+const Feedbacks = () => { 
   const auth = getAuth(app); 
   const router = useRouter(); 
   const [appointments, setAppointments] = useState([]); 
   const [activities, setActivities] = useState({});
 
-  // Vérifier si l'utilisateur est connecté
+  
   useEffect(() => { 
     const user = auth.currentUser;
 
@@ -37,7 +37,7 @@ const UnderConstructionPage = () => {
 
           setAppointments(appointmentsData);
 
-          // Charger les activités liées aux rendez-vous
+          
           const activityIds = [...new Set(appointmentsData.map((appointment) => appointment.activityID))];
           const activitiesData = {};
 
@@ -60,38 +60,35 @@ const UnderConstructionPage = () => {
 
   const pastAppointments = appointments.filter((appointment) => appointment.date.toDate ? appointment.date.toDate() < new Date() : new Date(appointment.date) < new Date());
 
-  // Enregistrer la note d'une activité
+  
   const submitRating = async (appointmentId, rating) => {
     try {
       const db = getFirestore(app);
       const appointmentRef = doc(db, 'appointments', appointmentId);
   
-      // Récupérer l'activité associée
       const activityId = appointments.find(appointment => appointment.id === appointmentId).activityID;
       const activityRef = doc(db, 'activities', activityId);
       const activityDoc = await getDoc(activityRef);
   
       if (activityDoc.exists()) {
         const activityData = activityDoc.data();
-        const currentRating = activityData.rating || 0;  // Note actuelle de l'activité
-        const numberOfReviews = activityData.numberOfReviews || 0;  // Nombre actuel d'avis
+        const currentRating = activityData.rating || 0;  
+        const numberOfReviews = activityData.numberOfReviews || 0;  
   
-        // Calculer la nouvelle note de l'activité
+        
         const newNumberOfReviews = numberOfReviews + 1;
         const newRating = Math.round(((currentRating * numberOfReviews) + rating) / newNumberOfReviews * 10) / 10;
   
-        // Mettre à jour la note de l'activité dans Firestore
+        
         await updateDoc(activityRef, {
           rating: newRating,
           numberOfReviews: newNumberOfReviews,
         });
-  
-        // Mettre à jour la note dans le rendez-vous
+        
         await updateDoc(appointmentRef, { rating });
   
         Alert.alert("Thank you!", "Your feedback has been recorded.");
   
-        // Mettre à jour l'état local
         setAppointments((prev) =>
           prev.map((appointment) =>
             appointment.id === appointmentId ? { ...appointment, rating } : appointment
@@ -108,7 +105,6 @@ const UnderConstructionPage = () => {
   
   return (
     <View style={styles.container}>
-      {/* Header */}
       <Header />
 
       <SafeAreaView style={styles.container}>
@@ -131,7 +127,6 @@ const UnderConstructionPage = () => {
                       <Text style={styles.appointmentText}>Activity: {activity ? activity.title : 'Unknown'}</Text>
                       <Text style={styles.appointmentText}>Price: {activity ? `$${activity.price}` : 'N/A'}</Text>
 
-                      {/* Composant de notation */}
                       {appointment.rating !== undefined ? (
                         <Text style={styles.alreadyRated}>You have already rated this activity: {appointment.rating} ★</Text>
                       ) : (
@@ -156,7 +151,6 @@ const UnderConstructionPage = () => {
               </View>
             )}
 
-            {/* Si aucun rendez-vous */}
             {pastAppointments.length === 0 && (
               <Text style={styles.message}>You have no past activities to rate. Once you attend an activity, you can provide feedback here!</Text>
             )}
@@ -164,16 +158,16 @@ const UnderConstructionPage = () => {
         </ScrollView>
       </SafeAreaView>
 
-      {/* BottomTabNavigator */}
       <BottomTabNavigator />
     </View>
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4f4f4',
+    backgroundColor: '#FEDB9B', 
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -185,14 +179,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
-    padding: 20,
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#B53302',
-    marginBottom: 20,
     textAlign: 'center',
+    marginVertical: 30,
+    elevation: 3,
+    shadowColor: '#B53302',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   message: {
     fontSize: 16,
@@ -202,26 +201,36 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
-    width: '100%',
-    padding: 10,
+    backgroundColor: '#FECA64', 
+    borderRadius: 10,
+    padding: 15,
+    marginHorizontal: 15,
+    shadowColor: '#B53302',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#B53302',
     marginBottom: 10,
     textAlign: 'center',
   },
   appointmentCard: {
-    backgroundColor: '#fff',
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 10,
-    shadowColor: '#000',
+    backgroundColor: '#FEDB9B',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+    shadowColor: '#B53302',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+    borderColor: '#E97D01',
+    borderWidth: 1,
   },
   appointmentText: {
     fontSize: 16,
@@ -232,6 +241,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     color: '#333',
+    textAlign: 'center',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -242,7 +252,7 @@ const styles = StyleSheet.create({
   },
   star: {
     fontSize: 18,
-    color: '#FECA64',
+    color: '#E97D01',
   },
   alreadyRated: {
     fontSize: 16,
@@ -251,4 +261,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UnderConstructionPage;
+export default Feedbacks;

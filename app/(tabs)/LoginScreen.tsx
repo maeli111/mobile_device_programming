@@ -22,7 +22,6 @@ function AuthForm() {
 
   const { control, handleSubmit, getValues, reset, formState: { errors } } = useForm();
 
-  // Fonction Inscription
   const signUp = async (data: any) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
@@ -30,7 +29,6 @@ function AuthForm() {
 
       console.log("User created:", user);
 
-      // Enregistrer dans Firestore
       const userDoc = await addDoc(collection(db, 'users'), {
         uid: user.uid,
         firstName: data.firstName,
@@ -42,7 +40,7 @@ function AuthForm() {
       console.log("Document added with ID:", userDoc.id);
 
       Alert.alert('Registration successful', `Welcome ${data.firstName}!`);
-      router.push('/Profile'); // Rediriger vers la page Profile
+      router.push('/Profile'); 
       return user.uid;
     } catch (e: any) {
       console.error("Registration error:", e.message);
@@ -51,7 +49,6 @@ function AuthForm() {
     }
   };
 
-  // Fonction Connexion
   const signIn = async (data: any) => {
     try {
       console.log('Attempting to connect with:', data.email);
@@ -60,7 +57,7 @@ function AuthForm() {
 
       console.log('Connection successful:', user);
       Alert.alert('Connection successful', `Welcome ${user.email}!`);
-      router.push('/Profile');  // Rediriger vers la page Profile
+      router.push('/Profile');  
       return user.uid;
     } catch (e: any) {
       console.error('Firebase Auth Error:', e.message);
@@ -173,7 +170,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FECA64',
+    backgroundColor: '#FEDB9B',
   },
   scrollContainer: {
     padding: 30,

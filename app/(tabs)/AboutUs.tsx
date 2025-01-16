@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
-import Header from '../screens/Header'; // Import Header
-import BottomNavigator from '../screens/BottomNavigator'; // Import BottomNavigator
+import Header from '../screens/Header'; 
+import BottomNavigator from '../screens/BottomNavigator'; 
 
-// About Us Component
+
 const AboutUs = () => {
   const [showContactInfo, setShowContactInfo] = useState(false);
 
   const toggleContactInfo = () => {
-    setShowContactInfo(!showContactInfo); // Toggle visibility of contact info
+    setShowContactInfo(!showContactInfo); 
   };
+
+  const logo = require('../../assets/images/logo.png'); 
 
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <Header />
-
-      {/* Scrollable Content */}
+      
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Company Introduction */}
+        <View style={styles.logoContainer}>
+          <Image source={logo} style={styles.logo} />
+        </View>
+      
         <View style={styles.section}>
           <Text style={styles.title}>Welcome to NomadEscape</Text>
           <Text style={styles.text}>
@@ -28,7 +31,6 @@ const AboutUs = () => {
           </Text>
         </View>
 
-        {/* Services Offered */}
         <View style={styles.section}>
           <Text style={styles.title}>Our Services</Text>
           <Text style={styles.text}>
@@ -43,31 +45,15 @@ const AboutUs = () => {
           </View>
         </View>
 
-        {/* Meet Our Team */}
         <View style={styles.section}>
           <Text style={styles.title}>Meet Our Team</Text>
           <Text style={styles.text}>
             Our team is made up of passionate and experienced guides, ready to share their knowledge and provide you
             with an unforgettable experience in Malta.
           </Text>
-
-          {/* Team Members */}
-          <View style={styles.teamContainer}>
-            <View style={styles.teamMember}>
-              <Image source={require('../../assets/images/guide1.png')} style={styles.teamImage} />
-              <Text style={styles.teamName}>John, Local Guide</Text>
-              <Text style={styles.teamRole}>Hiking Expert</Text>
-            </View>
-            <View style={styles.teamMember}>
-              <Image source={require('../../assets/images/guide2.png')} style={styles.teamImage} />
-              <Text style={styles.teamName}>Sarah, Cultural Guide</Text>
-              <Text style={styles.teamRole}>History & Heritage</Text>
-            </View>
-          </View>
         </View>
 
-        {/* Contact Section */}
-        <View style={styles.section}>
+        <View style={styles.section2}>
           <Text style={styles.title}>Get In Touch</Text>
           <Text style={styles.text}>
             For more information or to book an activity, feel free to get in touch with us:
@@ -76,17 +62,15 @@ const AboutUs = () => {
             <Text style={styles.contactText}>Contact Us</Text>
           </TouchableOpacity>
 
-          {/* Contact Info (Email & Phone) */}
           {showContactInfo && (
             <View style={styles.contactInfo}>
-              <Text style={styles.contactDetails}>📧 Email: support@nomadescape.com</Text>
-              <Text style={styles.contactDetails}>📞 Phone: +356 123 456 789</Text>
+              <Text style={styles.contactDetails}>Email: support@nomadescape.com</Text>
+              <Text style={styles.contactDetails}>Phone: +356 123 456 789</Text>
             </View>
           )}
         </View>
       </ScrollView>
 
-      {/* Bottom Navigator */}
       <BottomNavigator />
     </View>
   );
@@ -101,11 +85,33 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: '#FEDB9B', // Fond principal doux
+    backgroundColor: '#FEDB9B', 
   },
   section: {
     marginBottom: 30,
-    backgroundColor: '#FECA64', // Fond secondaire
+    backgroundColor: '#FECA64', 
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#B53302',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  logo: {
+    width: 120, 
+    height: 120,
+    resizeMode: 'contain',
+  },
+  section2: {
+    marginBottom: 90,
+    backgroundColor: '#FECA64', 
     borderRadius: 20,
     padding: 20,
     shadowColor: '#B53302',
@@ -118,8 +124,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#B53302', // Texte titre principal
-    textAlign: 'center',
+    color: '#B53302',
   },
   text: {
     fontSize: 16,
@@ -144,23 +149,8 @@ const styles = StyleSheet.create({
   teamMember: {
     alignItems: 'center',
   },
-  teamImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-  },
-  teamName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  teamRole: {
-    fontSize: 14,
-    color: '#888',
-  },
   contactButton: {
-    backgroundColor: '#FCAC23',  // Warm orange button
+    backgroundColor: '#FCAC23',  
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',

@@ -1,29 +1,25 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; // Assurez-vous d'avoir installé @expo/vector-icons
-import { useRouter } from 'expo-router';  // Utilisation de router pour la navigation
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; 
+import { useRouter } from 'expo-router';  
 
 const BottomNavigator = () => {
-  const router = useRouter(); // Gestion de la navigation
+  const router = useRouter(); 
   
-  // Fonction pour naviguer vers Home
   const navigateToHome = () => {
     router.push('/');
   };
 
-  // Fonction pour naviguer vers map
   const navigateToMap = () => {
     router.push('/Map');
   };
 
-  // Fonction pour naviguer vers search
   const navigateToSearch = () => {
     router.push('/Search');
   };
   
-  // Fonction pour naviguer vers booking activities
   const navigateToBooking = () => {
-    router.push('/Booking'); // Renommé pour plus de clarté
+    router.push('/Booking'); 
   };
 
   return (
@@ -54,11 +50,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#B53302', // Fond rouge intense
+    backgroundColor: '#B53302', 
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderBottomWidth: 2,
-    borderBottomColor: '#E97D01', // Bordure orange vif
+    borderBottomColor: '#E97D01', 
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -69,8 +65,8 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    justifyContent: 'center',  // Centrer horizontalement
-    alignItems: 'center',      // Centrer verticalement
-    padding: 10,               // Un peu de padding autour du bouton pour la taille
+    justifyContent: 'center',  
+    alignItems: 'center',      
+    padding: 10,               
   },
 });
