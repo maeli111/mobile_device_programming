@@ -44,15 +44,12 @@ const Header = () => {
 
   const menuItems = [
     { id: '1', title: 'Home', action: () => router.push('/') },
-    { id: '2', title: 'Messages', action: () => router.push('/Messages') },
+    { id: '2', title: 'Map', action: () => router.push('/Map') },
     { id: '3', title: 'Search', action: () => router.push('/Search') },
-    { id: '4', title: 'Map', action: () => router.push('/Map') },
+    { id: '4', title: 'Booking', action: goToBooking }, 
     { id: '5', title: 'My reservations', action: () => router.push('/Reservations') }, 
     { id: '6', title: 'Feedback', action: () => router.push('/Feedback') },
-    { id: '7', title: 'My profile', action: () => router.push('/Profile') },
-    { id: '8', title: 'About Us', action: () => router.push('/AboutUs') },
-    { id: '9', title: 'Modify activities', action: () => router.push('/ModifyActivities') },
-    { id: '10', title: 'Booking', action: goToBooking }, 
+    { id: '7', title: 'About Us', action: () => router.push('/AboutUs') },
   ];
 
   return (

@@ -251,7 +251,7 @@ export default function UserProfileScreen() {
                                             fill="#B53302"
                                         />
                                     </Svg>
-                                    <Text style={styles.cardText}>Past Appointments</Text>
+                                    <Text style={styles.cardText}>Your Appointments</Text>
 
                                 </View>
 
@@ -344,19 +344,6 @@ const styles = StyleSheet.create({
         marginTop: 48,
         paddingBottom: 20,
     },
-    user_card: {
-        flexDirection: "row",
-        borderRadius: 12,
-        marginHorizontal: 24,
-        marginBottom: 24,
-        backgroundColor: "#FECA64",
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        padding: 16,
-        alignItems: 'center',
-    },
     section_container: {
         flex: 1,
         marginBottom: 16,
@@ -382,6 +369,7 @@ const styles = StyleSheet.create({
     logout_container: {
         marginTop: 24,
         alignItems: "center",
+        marginBottom: 100,
     },
     logout_button: {
         flexDirection: "row",
@@ -423,7 +411,6 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     favoritesContainer: {
-        marginTop: 20,
         paddingHorizontal: 24,
     },
     favoriteItem: {
@@ -435,6 +422,7 @@ const styles = StyleSheet.create({
     favoriteText: {
         fontSize: 16,
         color: "#B53302",
+        fontWeight : 'bold',
     },
     accountInfoContainer: {
         marginBottom: 25,
@@ -451,5 +439,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#B53302",
         marginBottom: 0,
+        fontWeight : 'bold',
     },
 });
